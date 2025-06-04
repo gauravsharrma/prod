@@ -2,46 +2,93 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Card List</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToolboxAI</title>
   <style>
     body {
-      font-family: sans-serif;
-      background: #f5f5f5;
-      margin: 20px;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      color: #333;
     }
-    .card-container {
-      display: flex;
-      flex-wrap: wrap;
+    .hero {
+      background-color: #E5CCFF;
+      text-align: center;
+      padding: 60px 20px;
+    }
+    .hero h1 {
+      margin: 0;
+      font-size: 3rem;
+      color: #A259FF;
+    }
+    .hero p {
+      margin: 10px auto 0;
+      font-size: 1.125rem;
+      max-width: 700px;
+      color: #4F4F4F;
+    }
+    .tools-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 20px;
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 0 20px 60px;
     }
     .card {
-      background: white;
-      border-radius: 10px;
+      background-color: #fff;
+      border-radius: 12px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      padding: 20px;
-      width: 250px;
-      text-decoration: none;
-      color: #333;
-      transition: transform 0.2s;
+      text-align: center;
+      padding: 30px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
-    .card:hover {
-      transform: translateY(-5px);
+    .card .icon {
+      font-size: 48px;
+      margin-bottom: 20px;
+      color: #A259FF;
     }
     .card h3 {
-      margin-top: 0;
+      margin: 0 0 10px;
+      font-size: 1.25rem;
+      color: #333;
+    }
+    .card p {
+      flex-grow: 1;
+      font-size: 0.95rem;
+      color: #4F4F4F;
+      margin-bottom: 20px;
+    }
+    .card button {
+      background-color: #5BAFFF;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 12px 20px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .card button:hover {
+      background-color: #3894E0;
     }
   </style>
 </head>
 <body>
+  <section class="hero">
+    <h1>ToolboxAI</h1>
+    <p>Unlock your creative and productive potential with our suite of intelligent AI-powered tools. Each tool is designed for simplicity and power, helping you achieve more with less effort.</p>
+  </section>
 
-<h1>Tools & Pages</h1>
-
-<div class="card-container">
-  <a href="markdown_reader.html" class="card">
-    <h3>Markdown reader</h3>
-  </a>
-
-</div>
-
+  <section class="markdown_reader">
+    <div class="card">
+      <div class="icon">📄</div>
+      <h3>Markdown reader</h3>
+      <p>-</p>
+      <button>Markdown reader</button>
+    </div>
+  </section>
 </body>
 </html>
