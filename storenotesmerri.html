@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Markdown → HTML & Local Notes (Unified)</title>
+
+  <!-- Merriweather font (for entire page) -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Marked.js for Markdown parsing (converter & notes rendering) -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- SheetJS (xlsx) for Excel export/import in Notes App -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <style>
+    /* ─── GLOBAL RESET & TYPOGRAPHY ─────────────────────────────────────────── */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      font-family: 'Merriweather', serif;
+      background-color: #f0f0f0;
+      color: #333;
+    }
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 4px;
+      font-family: 'Merriweather', serif;
+    }
+    textarea, select, input {
+      font-family: 'Merriweather', serif;
+    }
+
+    /* ─── LAYOUT: THREE COLUMNS ────────────────────────────────────────────── */
+    body {
+      display: flex;
+      flex-direction: row;
+    }
+    .col-markdown {
+      width: 10%;
+      background-color: #fafafa;
+      border-right: 1px solid #ccc;
+      display: flex;
+      flex-direction: column;
+      padding: 0.5rem;
+    }
+    .col-html {
+      width: 60%;
+      background-color: #fafafa;
+      border-right: 1px solid #ccc;
+      display: flex;
+      flex-direction: column;
+      padding: 0.5rem;
+    }
+    .col-notes {
+      width: 30%;
+      background-color: #f4f4f9;
+      display: flex;
+      flex-direction: column;
+      overflow: auto;
+    }
+
+    /* ─── COLUMN 1: MARKDOWN INPUT ───────────────────────────────────── */
+    .col-markdown textarea {
+      flex: 1;
+      width: 100%;
+      resize: none;
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-family: monospace;
+      background-color: #fff;
+    }
+    .col-markdown button {
+      margin-top: 0.5rem;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      background-color: #4a90e2;
+      color: #fff;
+    }
+    .col-markdown button:disabled {
+      background-color: #999;
+      cursor: default;
+    }
+
+    /* ─── COLUMN 2: HTML OUTPUT & CONTROLS ────────────────────────── */
+    .col-html .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem;
+      border-bottom: 1px solid #ccc;
+      background-color: #fff;
+    }
+    .col-html .nav-buttons,
+    .col-html .font-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .col-html .controls button {
+      padding: 0.4rem 0.8rem;
+      font-size: 1rem;
+      background-color: #4a90e2;
+      color: #fff;
+    }
+    .col-html .controls button:disabled {
+      background-color: #999;
+      cursor: default;
+    }
+    .col-html #htmlOutput {
+      flex: 1;
+      overflow: auto;
+      margin: 0.5rem;
+      padding: 1.5rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background-color: #fafafa;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    /* ─── COLUMN 3: NOTES APP ────────────────────────────────────────── */
+    .notes-navbar {
+      background-color: #ffffff;
+      border-bottom: 1px solid #ccc;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .notes-navbar button {
+      background-color: #5a67d8;
+      color: #fff;
+      border-radius: 6px;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      transition: background-color 0.2s ease-in-out;
+    }
+    .notes-navbar button:hover {
+      background-color: #434190;
+    }
+    .notes-navbar input.upload-input {
+      margin-left: 0.5rem;
+    }
+    .hidden {
+      display: none;
+    }
+    .notes-container-main {
+      flex: 1;
+      overflow: auto;
+      padding: 1rem;
+    }
+    .notes-container-main h1 {
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+
+    /* Use a contentEditable <div> so bold (and other inline tags) persist */
+    .note-input {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 1rem;
+    }
+    .note-input div#newNote {
+      width: 100%;
+      min-height: 80px;
+      padding: 0.75rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+      background-color: #fff;
+      overflow-y: auto;
+    }
+    .note-input div#newNote:focus {
+      outline: 2px solid #5a67d8;
+    }
+    .note-input .controls {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .note-input select,
+    .note-input button.save {
+      font-size: 1rem;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background-color: #fff;
+      cursor: pointer;
+    }
+    .note-input select {
+      flex: 1 1 120px;
+    }
+    .note-input button.save {
+      background-color: #5a67d8;
+      color: #fff;
+      border: none;
+      transition: background-color 0.2s ease-in-out;
+    }
+    .note-input button.save:disabled {
+      background-color: #a3aedb;
+      cursor: not-allowed;
+    }
+    .note-input button.save:hover:not(:disabled) {
+      background-color: #434190;
+    }
+
+    .download-btn,
+    .upload-btn {
+      display: block;
+      margin: 0.5rem auto;
+      padding: 0.5rem 1.5rem;
+      font-size: 1rem;
+      background-color: #48bb78;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out;
+    }
+    .download-btn:disabled,
+    .upload-btn:disabled {
+      background-color: #9ae6b4;
+      cursor: not-allowed;
+    }
+    .download-btn:hover:not(:disabled),
+    .upload-btn:hover:not(:disabled) {
+      background-color: #2f855a;
+    }
+    .upload-input {
+      display: block;
+    }
+
+    /* ─── SEARCH & FILTER CONTAINER ───────────────────────────────────── */
+    .filter-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin: 0.5rem 0;
+    }
+    .filter-container input#searchInput,
+    .filter-container select#filterTypeSelect {
+      width: 100%;
+      padding: 0.5rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background-color: #fff;
+    }
+
+    .notes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .note-card {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 1rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .note-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .note-type {
+      background-color: #edf2f7;
+      color: #1a202c;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .note-timestamp {
+      font-size: 0.75rem;
+      color: #666;
+    }
+    .note-text {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+    }
+    .note-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+    }
+    .note-actions button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.25rem;
+      font-size: 1rem;
+      transition: color 0.2s ease;
+    }
+    .note-actions button.delete {
+      color: #e53e3e;
+    }
+    .note-actions button.delete:hover {
+      color: #9b2c2c;
+    }
+    .note-actions button.edit {
+      color: #2b6cb0;
+    }
+    .note-actions button.edit:hover {
+      color: #2c5282;
+    }
+
+    .settings-container {
+      padding: 1rem;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .settings-list {
+      margin-bottom: 1rem;
+    }
+    .settings-list ul {
+      list-style: none;
+    }
+    .settings-list li {
+      background-color: #edf2f7;
+      color: #1a202c;
+      padding: 0.5rem;
+      border-radius: 4px;
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .settings-list li span {
+      flex: 1;
+    }
+    .settings-list li button.delete-type {
+      background: none;
+      border: none;
+      color: #e53e3e;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: color 0.2s ease;
+    }
+    .settings-list li button.delete-type:hover {
+      color: #9b2c2c;
+    }
+    .add-type-form {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .add-type-form input {
+      flex: 1 1 150px;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+    .add-type-form button {
+      background-color: #48bb78;
+      color: #fff;
+      border-radius: 6px;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out;
+    }
+    .add-type-form button:disabled {
+      background-color: #9ae6b4;
+      cursor: not-allowed;
+    }
+    .add-type-form button:hover:not(:disabled) {
+      background-color: #2f855a;
+    }
+
+    @media (max-width: 500px) {
+      .note-input .controls,
+      .add-type-form {
+        flex-direction: column;
+      }
+      .note-input select,
+      .note-input button.save,
+      .add-type-form input,
+      .add-type-form button,
+      .download-btn,
+      .upload-btn {
+        width: 100%;
+      }
+      .note-actions {
+        justify-content: space-between;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ─── COLUMN 1: Markdown Input ─────────────────────────────────────── -->
+  <div class="col-markdown">
+    <textarea id="markdownInput" placeholder="Paste your Markdown…"></textarea>
+    <button id="convertBtn">Convert</button>
+  </div>
+
+  <!-- ─── COLUMN 2: HTML Output & Controls ──────────────────────────── -->
+  <div class="col-html">
+    <div class="controls">
+      <div class="nav-buttons">
+        <button id="prevBtn" disabled>Previous</button>
+        <button id="nextBtn" disabled>Next</button>
+      </div>
+      <div class="font-buttons">
+        <button id="decreaseFontBtn">–</button>
+        <button id="increaseFontBtn">+</button>
+      </div>
+    </div>
+    <div id="htmlOutput"><em>Converted HTML will appear here.</em></div>
+  </div>
+
+  <!-- ─── COLUMN 3: Notes App ────────────────────────────────────────── -->
+  <div class="col-notes">
+    <!-- Navbar with Settings button and Upload -->
+    <div class="notes-navbar">
+      <button id="toSettingsBtn">Settings</button>
+      <input
+        type="file"
+        id="uploadInput"
+        class="upload-input"
+        accept=".xlsx, .xls"
+      />
+      <button id="uploadBtn" class="upload-btn" disabled>Upload Excel</button>
+    </div>
+
+    <!-- Main View: Add / List Notes -->
+    <div id="mainView" class="notes-container-main">
+      <h1>My Notes</h1>
+
+      <!-- Note Input Section (contenteditable <div> for rich text) -->
+      <div class="note-input">
+        <div id="newNote" contenteditable="true" placeholder="Write your note here."></div>
+        <div class="controls">
+          <select id="typeSelect">
+            <!-- Options populated dynamically -->
+          </select>
+          <button id="saveBtn" class="save" disabled>Save Note</button>
+        </div>
+      </div>
+
+      <!-- Download Excel Button -->
+      <button id="downloadBtn" class="download-btn" disabled>
+        Download Notes as Excel
+      </button>
+
+      <!-- Search & Filter (Type) -->
+      <div class="filter-container">
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Search notes…"
+        />
+        <select id="filterTypeSelect">
+          <option value="">All Types</option>
+          <!-- Populated dynamically -->
+        </select>
+      </div>
+
+      <!-- Notes Listing -->
+      <div id="notesGrid" class="notes-grid">
+        <!-- Dynamically injected note cards -->
+      </div>
+    </div>
+
+    <!-- Settings View -->
+    <div id="settingsView" class="notes-container-main hidden">
+      <h2>Settings</h2>
+      <div class="settings-container">
+        <!-- Current Types List -->
+        <div class="settings-list">
+          <h3>Manage Types</h3>
+          <ul id="typesList">
+            <!-- Populated dynamically -->
+          </ul>
+        </div>
+        <!-- Add New Type Form -->
+        <div class="add-type-form">
+          <input
+            id="newTypeInput"
+            type="text"
+            placeholder="Enter new type (e.g. Task)"
+          />
+          <button id="addTypeBtn" disabled>Add Type</button>
+        </div>
+        <!-- Back to Notes Button -->
+        <div style="margin-top: 1rem; text-align: center;">
+          <button id="backBtn">Back to Notes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── SCRIPTS ──────────────────────────────────────────────────────── -->
+  <script>
+    /* ─── JAVASCRIPT FOR MARKDOWN → HTML (Columns 1 & 2) ───────────────────────── */
+    let sections = [];
+    let currentIndex = 0;
+    let fontSize = 16;
+
+    const textarea = document.getElementById('markdownInput');
+    const convertBtn = document.getElementById('convertBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const htmlOutput = document.getElementById('htmlOutput');
+    const increaseFontBtn = document.getElementById('increaseFontBtn');
+    const decreaseFontBtn = document.getElementById('decreaseFontBtn');
+
+    function renderSection(index) {
+      if (!sections.length) return;
+      const md = sections[index] || '';
+      htmlOutput.innerHTML = marked.parse(md);
+      prevBtn.disabled = index <= 0;
+      nextBtn.disabled = index >= sections.length - 1;
+    }
+
+    convertBtn.addEventListener('click', () => {
+      const raw = textarea.value;
+      sections = raw
+        .split(/^---$/m)
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+      currentIndex = 0;
+      if (sections.length) {
+        renderSection(0);
+      } else {
+        htmlOutput.innerHTML =
+          '<em>No content found after splitting by <code>---</code>.</em>';
+        prevBtn.disabled = true;
+        nextBtn.disabled = true;
+      }
+    });
+
+    prevBtn.addEventListener('click', () => {
+      if (currentIndex > 0) {
+        currentIndex--;
+        renderSection(currentIndex);
+      }
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (currentIndex < sections.length - 1) {
+        currentIndex++;
+        renderSection(currentIndex);
+      }
+    });
+
+    increaseFontBtn.addEventListener('click', () => {
+      fontSize += 2;
+      htmlOutput.style.fontSize = fontSize + 'px';
+    });
+
+    decreaseFontBtn.addEventListener('click', () => {
+      if (fontSize > 8) {
+        fontSize -= 2;
+        htmlOutput.style.fontSize = fontSize + 'px';
+      }
+    });
+
+    /* ─── IMPORTANT CHANGE: Ignore Space/Arrows if typing in #newNote ────────────────── */
+    document.addEventListener('keydown', (event) => {
+      const activeEl = document.activeElement;
+      const newNoteDiv = document.getElementById('newNote');
+      if (activeEl === newNoteDiv || newNoteDiv.contains(activeEl)) {
+        return; // allow normal typing/space/navigation inside the note
+      }
+      const key = event.key;
+      if (!sections.length) return;
+      if (key === ' ' || key === 'Spacebar' || key === 'ArrowRight') {
+        event.preventDefault();
+        if (currentIndex < sections.length - 1) {
+          currentIndex++;
+          renderSection(currentIndex);
+        }
+      }
+      if (key === 'ArrowLeft') {
+        if (currentIndex > 0) {
+          currentIndex--;
+          renderSection(currentIndex);
+        }
+      }
+    });
+
+    /* ─── JAVASCRIPT FOR NOTES APP (Column 3) ──────────────────────────── */
+    // Selectors
+    const toSettingsBtn = document.getElementById('toSettingsBtn');
+    const backBtn = document.getElementById('backBtn');
+    const mainView = document.getElementById('mainView');
+    const settingsView = document.getElementById('settingsView');
+
+    const newNoteDiv = document.getElementById('newNote');
+    const saveBtn = document.getElementById('saveBtn');
+    const typeSelect = document.getElementById('typeSelect');
+    const notesGrid = document.getElementById('notesGrid');
+
+    const downloadBtn = document.getElementById('downloadBtn');
+    const uploadInput = document.getElementById('uploadInput');
+    const uploadBtn = document.getElementById('uploadBtn');
+
+    const typesList = document.getElementById('typesList');
+    const newTypeInput = document.getElementById('newTypeInput');
+    const addTypeBtn = document.getElementById('addTypeBtn');
+
+    const searchInput = document.getElementById('searchInput');
+    const filterTypeSelect = document.getElementById('filterTypeSelect');
+
+    // Storage keys
+    const NOTES_KEY = 'localNotesApp_notes';
+    const TYPES_KEY = 'localNotesApp_types';
+
+    // Default types
+    const DEFAULT_TYPES = ['Note', 'Query'];
+
+    // Retrieve types from localStorage or initialize defaults
+    function getStoredTypes() {
+      const saved = localStorage.getItem(TYPES_KEY);
+      try {
+        const arr = saved ? JSON.parse(saved) : null;
+        if (Array.isArray(arr) && arr.length > 0) {
+          return arr;
+        }
+      } catch {}
+      localStorage.setItem(TYPES_KEY, JSON.stringify(DEFAULT_TYPES));
+      return DEFAULT_TYPES;
+    }
+    // Save types to localStorage
+    function saveTypesToStorage(types) {
+      localStorage.setItem(TYPES_KEY, JSON.stringify(types));
+    }
+    // Populate the type select dropdown
+    function populateTypeSelect() {
+      const types = getStoredTypes();
+      typeSelect.innerHTML = '';
+      filterTypeSelect.innerHTML = '<option value="">All Types</option>';
+      types.forEach((type) => {
+        const opt = document.createElement('option');
+        opt.value = type;
+        opt.textContent = type;
+        typeSelect.appendChild(opt);
+
+        const filtOpt = document.createElement('option');
+        filtOpt.value = type;
+        filtOpt.textContent = type;
+        filterTypeSelect.appendChild(filtOpt);
+      });
+    }
+    // Render types in the settings list
+    function renderTypesList() {
+      const types = getStoredTypes();
+      typesList.innerHTML = '';
+      types.forEach((type, index) => {
+        const li = document.createElement('li');
+        const span = document.createElement('span');
+        span.textContent = type;
+        const delBtn = document.createElement('button');
+        delBtn.className = 'delete-type';
+        delBtn.title = 'Delete this type';
+        delBtn.innerHTML = '🗑️';
+        delBtn.addEventListener('click', () => deleteType(index));
+        li.appendChild(span);
+        li.appendChild(delBtn);
+        typesList.appendChild(li);
+      });
+      // After modifying types, refresh both dropdowns
+      populateTypeSelect();
+    }
+    // Add a new type
+    function addNewType() {
+      const newType = newTypeInput.value.trim();
+      if (!newType) return;
+      let types = getStoredTypes();
+      if (types.includes(newType)) {
+        alert('This type already exists.');
+        return;
+      }
+      types.push(newType);
+      saveTypesToStorage(types);
+      newTypeInput.value = '';
+      addTypeBtn.disabled = true;
+      populateTypeSelect();
+      renderTypesList();
+      renderNotes();
+    }
+    // Delete a type by index
+    function deleteType(index) {
+      let types = getStoredTypes();
+      if (types.length <= 1) {
+        alert('At least one type must remain.');
+        return;
+      }
+      types.splice(index, 1);
+      saveTypesToStorage(types);
+      populateTypeSelect();
+      renderTypesList();
+      renderNotes();
+    }
+
+    // Retrieve notes array from localStorage (or return empty array). Each note’s text is stored as Markdown.
+    function getStoredNotes() {
+      const saved = localStorage.getItem(NOTES_KEY);
+      try {
+        return saved ? JSON.parse(saved) : [];
+      } catch {
+        return [];
+      }
+    }
+    // Save notes array to localStorage
+    function saveNotesToStorage(notes) {
+      localStorage.setItem(NOTES_KEY, JSON.stringify(notes));
+    }
+    // Convert HTML (from contentEditable) to Markdown
+    function htmlToMarkdown(html) {
+      let md = html;
+      // Replace <strong> and <b> with **text**
+      md = md.replace(/<strong>([\s\S]*?)<\/strong>/gi, '**$1**');
+      md = md.replace(/<b>([\s\S]*?)<\/b>/gi, '**$1**');
+      // Replace <em> and <i> with *text*
+      md = md.replace(/<em>([\s\S]*?)<\/em>/gi, '*$1*');
+      md = md.replace(/<i>([\s\S]*?)<\/i>/gi, '*$1*');
+      // Replace <br> with newline
+      md = md.replace(/<br\s*\/?>/gi, '\n');
+      // Replace paragraphs/divs with double-line breaks
+      md = md.replace(/<\/div>/gi, '\n');
+      md = md.replace(/<div>/gi, '');
+      md = md.replace(/<\/p>/gi, '\n\n');
+      md = md.replace(/<p>/gi, '');
+      // Strip any remaining tags
+      md = md.replace(/<[^>]+>/g, '');
+      return md.trim();
+    }
+    // “safeToMarkdown” ensures that if stored text has any '<', we convert it; otherwise we assume it’s already Markdown.
+    function safeToMarkdown(text) {
+      if (/<[^>]+>/.test(text)) {
+        return htmlToMarkdown(text);
+      }
+      return text;
+    }
+    // Render all notes on the page, applying search & filter
+    function renderNotes() {
+      const notes = getStoredNotes();
+      notesGrid.innerHTML = '';
+
+      // Enable/disable download
+      downloadBtn.disabled = notes.length === 0;
+
+      // Get filter values
+      const searchQuery = searchInput.value.trim().toLowerCase();
+      const filterType = filterTypeSelect.value;
+
+      // Filter notes
+      const filtered = notes.filter((note) => {
+        const matchesType = filterType === '' || note.type === filterType;
+        const matchesSearch = searchQuery === '' || note.text.toLowerCase().includes(searchQuery);
+        return matchesType && matchesSearch;
+      });
+
+      if (filtered.length === 0) {
+        const emptyMsg = document.createElement('p');
+        emptyMsg.style.textAlign = 'center';
+        emptyMsg.style.color = '#666';
+        emptyMsg.textContent = 'No notes found.';
+        notesGrid.appendChild(emptyMsg);
+        return;
+      }
+
+      filtered.forEach((noteObj, indexOriginal) => {
+        // We need the original index for edit/delete
+        const originalIndex = notes.indexOf(noteObj);
+
+        const card = document.createElement('div');
+        card.className = 'note-card';
+
+        const headerDiv = document.createElement('div');
+        headerDiv.className = 'note-header';
+
+        const typeBadge = document.createElement('div');
+        typeBadge.className = 'note-type';
+        typeBadge.textContent = noteObj.type;
+
+        const timestampDiv = document.createElement('div');
+        timestampDiv.className = 'note-timestamp';
+        const date = new Date(noteObj.timestamp);
+        timestampDiv.textContent = date.toLocaleString();
+
+        headerDiv.appendChild(typeBadge);
+        headerDiv.appendChild(timestampDiv);
+
+        const textDiv = document.createElement('div');
+        textDiv.className = 'note-text';
+        // Convert stored Markdown to HTML
+        textDiv.innerHTML = marked.parse(noteObj.text);
+
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'note-actions';
+
+        const editBtn = document.createElement('button');
+        editBtn.className = 'edit';
+        editBtn.title = 'Edit Note';
+        editBtn.innerHTML = '✏️';
+        editBtn.addEventListener('click', () => startEditNote(originalIndex));
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete';
+        deleteBtn.title = 'Delete Note';
+        deleteBtn.innerHTML = '🗑️';
+        deleteBtn.addEventListener('click', () => deleteNote(originalIndex));
+
+        actionsDiv.append(editBtn, deleteBtn);
+
+        card.appendChild(headerDiv);
+        card.appendChild(textDiv);
+        card.appendChild(actionsDiv);
+
+        notesGrid.appendChild(card);
+      });
+    }
+    // Add a new note (or finish editing an existing one). Convert HTML → Markdown before storing.
+    function saveNote() {
+      const rawHTML = newNoteDiv.innerHTML.trim();
+      if (!rawHTML) return;
+      const markdownText = htmlToMarkdown(rawHTML);
+      const selectedType = typeSelect.value;
+      let notes = getStoredNotes();
+
+      if (newNoteDiv.dataset.editIndex != null) {
+        const idx = parseInt(newNoteDiv.dataset.editIndex, 10);
+        notes[idx].text = markdownText;
+        notes[idx].type = selectedType;
+        notes[idx].timestamp = Date.now();
+        delete newNoteDiv.dataset.editIndex;
+      } else {
+        notes.push({
+          text: markdownText,
+          timestamp: Date.now(),
+          type: selectedType
+        });
+      }
+
+      saveNotesToStorage(notes);
+      newNoteDiv.innerHTML = '';
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Save Note';
+      renderNotes();
+    }
+    // Delete a note by index
+    function deleteNote(index) {
+      let notes = getStoredNotes();
+      notes.splice(index, 1);
+      saveNotesToStorage(notes);
+      renderNotes();
+    }
+    // Begin editing an existing note: load its Markdown into the editable <div> by converting Markdown → HTML
+    function startEditNote(index) {
+      const notes = getStoredNotes();
+      const markdownText = notes[index].text;
+      // Convert Markdown → HTML for editing
+      newNoteDiv.innerHTML = marked.parse(markdownText);
+      typeSelect.value = notes[index].type;
+      newNoteDiv.focus();
+      newNoteDiv.dataset.editIndex = index;
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Update Note';
+    }
+    // Download notes as an Excel file, storing Markdown in the "Text" column
+    function downloadNotesAsExcel() {
+      const notes = getStoredNotes();
+      if (notes.length === 0) return;
+
+      // Worksheet data: use safeToMarkdown(...)
+      const worksheetData = notes.map((note) => {
+        const mdText = safeToMarkdown(note.text);
+        return {
+          Type: note.type,
+          Timestamp: new Date(note.timestamp).toLocaleString(),
+          Text: mdText
+        };
+      });
+      const worksheet = XLSX.utils.json_to_sheet(worksheetData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Notes');
+      XLSX.writeFile(workbook, 'notes.xlsx');
+    }
+    // Parse uploaded Excel and store notes to localStorage (assume "Text" column contains Markdown)
+    function uploadNotesFromExcel(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        // Expect columns: "Type", "Timestamp", "Text" (where Text is Markdown)
+        const rows = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+
+        const parsedNotes = rows.map((row) => {
+          let ts = Date.parse(row.Timestamp);
+          if (isNaN(ts)) ts = Date.now();
+          return {
+            type: row.Type || '',
+            timestamp: ts,
+            text: row.Text || '' // row.Text is Markdown
+          };
+        });
+
+        saveNotesToStorage(parsedNotes);
+        renderNotes();
+        alert('Notes loaded from Excel successfully.');
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // Switch to Settings view
+    function showSettings() {
+      mainView.classList.add('hidden');
+      settingsView.classList.remove('hidden');
+    }
+    // Switch back to Main view
+    function showMain() {
+      settingsView.classList.add('hidden');
+      mainView.classList.remove('hidden');
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      // Populate types and render initial state
+      populateTypeSelect();
+      renderTypesList();
+      renderNotes();
+
+      // Event listeners
+      toSettingsBtn.addEventListener('click', showSettings);
+      backBtn.addEventListener('click', showMain);
+
+      newNoteDiv.addEventListener('input', () => {
+        const hasText = newNoteDiv.innerText.trim().length > 0;
+        saveBtn.disabled = !hasText;
+        if (!newNoteDiv.dataset.editIndex) {
+          saveBtn.textContent = 'Save Note';
+        }
+      });
+      saveBtn.addEventListener('click', saveNote);
+
+      downloadBtn.addEventListener('click', downloadNotesAsExcel);
+
+      // Upload Excel logic
+      uploadInput.addEventListener('change', () => {
+        uploadBtn.disabled = !uploadInput.files.length;
+      });
+      uploadBtn.addEventListener('click', () => {
+        if (uploadInput.files.length) {
+          uploadNotesFromExcel(uploadInput.files[0]);
+          uploadInput.value = '';
+          uploadBtn.disabled = true;
+        }
+      });
+
+      // Search & filter listeners
+      searchInput.addEventListener('input', renderNotes);
+      filterTypeSelect.addEventListener('change', renderNotes);
+
+      newTypeInput.addEventListener('input', () => {
+        const val = newTypeInput.value.trim();
+        addTypeBtn.disabled = val.length === 0;
+      });
+      addTypeBtn.addEventListener('click', addNewType);
+    });
+  </script>
+</body>
+</html>
