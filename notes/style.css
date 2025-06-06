@@ -55,7 +55,23 @@ body {
   transition: background-color 0.3s;
 }
 
-/* ─── COLUMN 1: MARKDOWN INPUT ───────────────────────────────────── */
+/* ─── COLUMN 1: MARKDOWN INPUT & SPLIT DROPDOWN ────────────────────── */
+.split-label {
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+  color: #555;
+}
+.split-select {
+  width: 100%;
+  padding: 0.4rem;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fff;
+  color: #000;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
 .col-markdown textarea {
   flex: 1;
   width: 100%;
@@ -162,7 +178,7 @@ body {
   text-align: center;
 }
 
-/* Use a contentEditable <div> so bold (and other inline tags) persist */
+/* Use a contentEditable <div> so bold/italic persist */
 .note-input {
   display: flex;
   flex-direction: column;
@@ -243,7 +259,7 @@ body {
   display: block;
 }
 
-/* ─── SEARCH & FILTER CONTAINER ───────────────────────────────────── */
+/* ─── SEARCH & FILTER ───────────────────────────────────── */
 .filter-container {
   display: flex;
   flex-direction: column;
@@ -340,7 +356,7 @@ body {
   transition: background-color 0.3s, color 0.3s;
 }
 .settings-list {
-  margin-bottom: 1rem;
+  margin-bottom: 1rem;  
 }
 .settings-list ul {
   list-style: none;
@@ -420,7 +436,7 @@ body.dark-mode .col-notes {
   background-color: #1e1e1e;
 }
 
-/* ★★★ Add these two rules to make the HTML Output (second column) go dark ★★★ */
+/* Make the HTML Output (second column) dark, too */
 body.dark-mode .col-html #htmlOutput {
   background-color: #2e2e2e;
   color: #e0e0e0;
