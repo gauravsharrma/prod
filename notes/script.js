@@ -10,6 +10,7 @@ const nextBtn = document.getElementById('nextBtn');
 const htmlOutput = document.getElementById('htmlOutput');
 const increaseFontBtn = document.getElementById('increaseFontBtn');
 const decreaseFontBtn = document.getElementById('decreaseFontBtn');
+const splitOption = document.getElementById('splitOption');
 
 function renderSection(index) {
   if (!sections.length) return;
@@ -21,16 +22,44 @@ function renderSection(index) {
 
 convertBtn.addEventListener('click', () => {
   const raw = textarea.value;
-  sections = raw
-    .split(/^---$/m)
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0);
+  const mode = splitOption.value;
+
+  // Determine split logic based on dropdown
+  switch (mode) {
+    case 'dash':
+      // Split on lines that are exactly `---`
+      sections = raw
+        .split(/^---$/m)
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+      break;
+
+    case 'h1':
+      // Split at every level‐1 heading (keep the heading on its own section)
+      // Use lookahead so that each section begins with "# "
+      sections = raw.split(/(?=^#\s.*$)/m).map((s) => s.trim()).filter((s) => s.length > 0);
+      break;
+
+    case 'h2':
+      // Split at every level‐2 heading
+      sections = raw.split(/(?=^##\s.*$)/m).map((s) => s.trim()).filter((s) => s.length > 0);
+      break;
+
+    case 'para':
+      // Split paragraphs at blank‐line boundaries
+      // (two or more consecutive newlines)
+      sections = raw.split(/\n{2,}/).map((s) => s.trim()).filter((s) => s.length > 0);
+      break;
+
+    default:
+      sections = [raw];
+  }
+
   currentIndex = 0;
   if (sections.length) {
     renderSection(0);
   } else {
-    htmlOutput.innerHTML =
-      '<em>No content found after splitting by <code>---</code>.</em>';
+    htmlOutput.innerHTML = '<em>No content to display.</em>';
     prevBtn.disabled = true;
     nextBtn.disabled = true;
   }
@@ -67,8 +96,7 @@ document.addEventListener('keydown', (event) => {
   const activeEl = document.activeElement;
   const newNoteDiv = document.getElementById('newNote');
   if (activeEl === newNoteDiv || newNoteDiv.contains(activeEl)) {
-    // allow normal typing inside notes
-    return;
+    return; // allow normal typing inside notes
   }
   const key = event.key;
   if (!sections.length) return;
