@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Markdown → HTML & Local Notes (Unified)</title>
 
-  <!-- Merriweather font (for entire page) -->
+  <!-- Merriweather font for the entire page -->
   <link
     href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&display=swap"
     rel="stylesheet"
@@ -14,20 +14,28 @@
   <!-- Our own CSS -->
   <link rel="stylesheet" href="style.css" />
 
-  <!-- Marked.js (Markdown parser) -->
+  <!-- Marked.js (for Markdown parsing) -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <!-- SheetJS (xlsx) for Excel export/import -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 
 <body>
-  <!-- ─── COLUMN 1: Markdown Input ─────────────────────────────────────── -->
+  <!-- ─── COLUMN 1: Markdown Input & Split Selector ─────────────────────────── -->
   <div class="col-markdown">
+    <label for="splitOption" class="split-label">Split by:</label>
+    <select id="splitOption" class="split-select">
+      <option value="dash">--- (three hyphens)</option>
+      <option value="h1"># (level 1 headings)</option>
+      <option value="h2">## (level 2 headings)</option>
+      <option value="para">Paragraph(s)</option>
+    </select>
+
     <textarea id="markdownInput" placeholder="Paste your Markdown…"></textarea>
     <button id="convertBtn">Convert</button>
   </div>
 
-  <!-- ─── COLUMN 2: HTML Output & Controls ──────────────────────────── -->
+  <!-- ─── COLUMN 2: HTML Output & Controls ────────────────────────────────── -->
   <div class="col-html">
     <div class="controls">
       <div class="nav-buttons">
@@ -42,9 +50,9 @@
     <div id="htmlOutput"><em>Converted HTML will appear here.</em></div>
   </div>
 
-  <!-- ─── COLUMN 3: Notes App ────────────────────────────────────────── -->
+  <!-- ─── COLUMN 3: Notes App ────────────────────────────────────────────── -->
   <div class="col-notes">
-    <!-- Navbar with Settings button, Dark/Light toggle, and Upload -->
+    <!-- Navbar with Settings, Dark/Light toggle, and Upload -->
     <div class="notes-navbar">
       <button id="toSettingsBtn">Settings</button>
       <button id="modeToggleBtn">Toggle Dark Mode</button>
@@ -61,7 +69,7 @@
     <div id="mainView" class="notes-container-main">
       <h1>My Notes</h1>
 
-      <!-- Note Input Section (contenteditable <div> for rich text) -->
+      <!-- Note Input Section (contenteditable for rich text) -->
       <div class="note-input">
         <div id="newNote" contenteditable="true" placeholder="Write your note here."></div>
         <div class="controls">
@@ -77,7 +85,7 @@
         Download Notes as Excel
       </button>
 
-      <!-- Search & Filter (Type) -->
+      <!-- Search & Filter by Type -->
       <div class="filter-container">
         <input
           type="text"
@@ -90,9 +98,9 @@
         </select>
       </div>
 
-      <!-- Notes Listing -->
+      <!-- Notes Grid -->
       <div id="notesGrid" class="notes-grid">
-        <!-- Dynamically injected note cards -->
+        <!-- Dynamic note cards appear here -->
       </div>
     </div>
 
@@ -100,7 +108,7 @@
     <div id="settingsView" class="notes-container-main hidden">
       <h2>Settings</h2>
       <div class="settings-container">
-        <!-- Current Types List -->
+        <!-- Manage Types -->
         <div class="settings-list">
           <h3>Manage Types</h3>
           <ul id="typesList">
@@ -128,4 +136,3 @@
   <script src="script.js"></script>
 </body>
 </html>
-
