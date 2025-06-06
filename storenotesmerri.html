@@ -45,6 +45,7 @@
     body {
       display: flex;
       flex-direction: row;
+      transition: background-color 0.3s, color 0.3s;
     }
     .col-markdown {
       width: 10%;
@@ -53,6 +54,7 @@
       display: flex;
       flex-direction: column;
       padding: 0.5rem;
+      transition: background-color 0.3s, border-color 0.3s;
     }
     .col-html {
       width: 60%;
@@ -61,6 +63,7 @@
       display: flex;
       flex-direction: column;
       padding: 0.5rem;
+      transition: background-color 0.3s, border-color 0.3s;
     }
     .col-notes {
       width: 30%;
@@ -68,6 +71,7 @@
       display: flex;
       flex-direction: column;
       overflow: auto;
+      transition: background-color 0.3s;
     }
 
     /* ─── COLUMN 1: MARKDOWN INPUT ───────────────────────────────────── */
@@ -81,6 +85,8 @@
       border-radius: 4px;
       font-family: monospace;
       background-color: #fff;
+      color: #000;
+      transition: background-color 0.3s, color 0.3s, border-color 0.3s;
     }
     .col-markdown button {
       margin-top: 0.5rem;
@@ -88,6 +94,7 @@
       font-size: 1rem;
       background-color: #4a90e2;
       color: #fff;
+      transition: background-color 0.3s;
     }
     .col-markdown button:disabled {
       background-color: #999;
@@ -102,6 +109,7 @@
       padding: 0.5rem;
       border-bottom: 1px solid #ccc;
       background-color: #fff;
+      transition: background-color 0.3s, border-color 0.3s;
     }
     .col-html .nav-buttons,
     .col-html .font-buttons {
@@ -113,6 +121,7 @@
       font-size: 1rem;
       background-color: #4a90e2;
       color: #fff;
+      transition: background-color 0.3s;
     }
     .col-html .controls button:disabled {
       background-color: #999;
@@ -128,6 +137,8 @@
       background-color: #fafafa;
       font-size: 16px;
       line-height: 1.5;
+      color: #000;
+      transition: background-color 0.3s, color 0.3s, border-color 0.3s;
     }
 
     /* ─── COLUMN 3: NOTES APP ────────────────────────────────────────── */
@@ -139,6 +150,7 @@
       justify-content: space-between;
       align-items: center;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: background-color 0.3s, border-color 0.3s;
     }
     .notes-navbar button {
       background-color: #5a67d8;
@@ -146,7 +158,7 @@
       border-radius: 6px;
       padding: 0.5rem 1rem;
       font-size: 1rem;
-      transition: background-color 0.2s ease-in-out;
+      transition: background-color 0.3s;
     }
     .notes-navbar button:hover {
       background-color: #434190;
@@ -161,6 +173,7 @@
       flex: 1;
       overflow: auto;
       padding: 1rem;
+      transition: background-color 0.3s;
     }
     .notes-container-main h1 {
       font-weight: 700;
@@ -182,7 +195,9 @@
       border-radius: 8px;
       font-size: 1rem;
       background-color: #fff;
+      color: #000;
       overflow-y: auto;
+      transition: background-color 0.3s, color 0.3s, border-color 0.3s;
     }
     .note-input div#newNote:focus {
       outline: 2px solid #5a67d8;
@@ -201,6 +216,8 @@
       border: 1px solid #ccc;
       background-color: #fff;
       cursor: pointer;
+      color: #000;
+      transition: background-color 0.3s, color 0.3s, border-color 0.3s;
     }
     .note-input select {
       flex: 1 1 120px;
@@ -209,7 +226,7 @@
       background-color: #5a67d8;
       color: #fff;
       border: none;
-      transition: background-color 0.2s ease-in-out;
+      transition: background-color 0.3s;
     }
     .note-input button.save:disabled {
       background-color: #a3aedb;
@@ -230,7 +247,7 @@
       border: none;
       border-radius: 6px;
       cursor: pointer;
-      transition: background-color 0.2s ease-in-out;
+      transition: background-color 0.3s;
     }
     .download-btn:disabled,
     .upload-btn:disabled {
@@ -260,6 +277,8 @@
       border: 1px solid #ccc;
       border-radius: 6px;
       background-color: #fff;
+      color: #000;
+      transition: background-color 0.3s, color 0.3s, border-color 0.3s;
     }
 
     .notes-grid {
@@ -276,6 +295,7 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      transition: background-color 0.3s, color 0.3s, box-shadow 0.3s;
     }
     .note-header {
       display: flex;
@@ -291,6 +311,7 @@
       font-size: 0.8rem;
       font-weight: 700;
       text-transform: uppercase;
+      transition: background-color 0.3s, color 0.3s;
     }
     .note-timestamp {
       font-size: 0.75rem;
@@ -301,6 +322,8 @@
       word-wrap: break-word;
       margin-bottom: 1rem;
       font-size: 0.95rem;
+      color: #000;
+      transition: color 0.3s;
     }
     .note-actions {
       display: flex;
@@ -313,7 +336,7 @@
       cursor: pointer;
       padding: 0.25rem;
       font-size: 1rem;
-      transition: color 0.2s ease;
+      transition: color 0.3s;
     }
     .note-actions button.delete {
       color: #e53e3e;
@@ -333,6 +356,7 @@
       background-color: #fff;
       border-radius: 8px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      transition: background-color 0.3s, color 0.3s;
     }
     .settings-list {
       margin-bottom: 1rem;
@@ -350,6 +374,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      transition: background-color 0.3s, color 0.3s;
     }
     .settings-list li span {
       flex: 1;
@@ -360,7 +385,7 @@
       color: #e53e3e;
       cursor: pointer;
       font-size: 1rem;
-      transition: color 0.2s ease;
+      transition: color 0.3s;
     }
     .settings-list li button.delete-type:hover {
       color: #9b2c2c;
@@ -376,6 +401,9 @@
       border: 1px solid #ccc;
       border-radius: 6px;
       font-size: 1rem;
+      background-color: #fff;
+      color: #000;
+      transition: background-color 0.3s, color 0.3s, border-color 0.3s;
     }
     .add-type-form button {
       background-color: #48bb78;
@@ -384,7 +412,7 @@
       padding: 0.5rem 1rem;
       font-size: 1rem;
       cursor: pointer;
-      transition: background-color 0.2s ease-in-out;
+      transition: background-color 0.3s;
     }
     .add-type-form button:disabled {
       background-color: #9ae6b4;
@@ -394,22 +422,72 @@
       background-color: #2f855a;
     }
 
-    @media (max-width: 500px) {
-      .note-input .controls,
-      .add-type-form {
-        flex-direction: column;
-      }
-      .note-input select,
-      .note-input button.save,
-      .add-type-form input,
-      .add-type-form button,
-      .download-btn,
-      .upload-btn {
-        width: 100%;
-      }
-      .note-actions {
-        justify-content: space-between;
-      }
+    /* ─── DARK MODE OVERRIDES ──────────────────────────────────────────── */
+    body.dark-mode {
+      background-color: #121212;
+      color: #e0e0e0;
+    }
+    body.dark-mode .col-markdown {
+      background-color: #1e1e1e;
+      border-right-color: #444;
+    }
+    body.dark-mode .col-html {
+      background-color: #1e1e1e;
+      border-right-color: #444;
+    }
+    body.dark-mode .col-notes {
+      background-color: #1e1e1e;
+    }
+    body.dark-mode .col-markdown textarea,
+    body.dark-mode .note-input div#newNote,
+    body.dark-mode .filter-container input,
+    body.dark-mode .filter-container select,
+    body.dark-mode textarea,
+    body.dark-mode select,
+    body.dark-mode input {
+      background-color: #2e2e2e;
+      color: #e0e0e0;
+      border-color: #555;
+    }
+    body.dark-mode .notes-navbar,
+    body.dark-mode .col-html .controls {
+      background-color: #2e2e2e;
+      border-bottom-color: #444;
+    }
+    body.dark-mode .notes-navbar button,
+    body.dark-mode .col-markdown button,
+    body.dark-mode .col-html .controls button,
+    body.dark-mode .filter-container input,
+    body.dark-mode .filter-container select,
+    body.dark-mode .download-btn,
+    body.dark-mode .upload-btn {
+      background-color: #444;
+      color: #e0e0e0;
+    }
+    body.dark-mode .download-btn:hover,
+    body.dark-mode .upload-btn:hover,
+    body.dark-mode .notes-navbar button:hover,
+    body.dark-mode .note-input button.save:hover,
+    body.dark-mode .add-type-form button:hover {
+      background-color: #666;
+    }
+    body.dark-mode .note-card {
+      background-color: #2e2e2e;
+      box-shadow: none;
+    }
+    body.dark-mode .note-type {
+      background-color: #444;
+      color: #ccc;
+    }
+    body.dark-mode .note-text {
+      color: #ddd;
+    }
+    body.dark-mode .settings-container,
+    body.dark-mode .add-type-form input,
+    body.dark-mode .note-input div#newNote,
+    body.dark-mode .filter-container select {
+      background-color: #2e2e2e;
+      color: #e0e0e0;
     }
   </style>
 </head>
@@ -438,9 +516,10 @@
 
   <!-- ─── COLUMN 3: Notes App ────────────────────────────────────────── -->
   <div class="col-notes">
-    <!-- Navbar with Settings button and Upload -->
+    <!-- Navbar with Settings button, Dark/Light toggle, and Upload -->
     <div class="notes-navbar">
       <button id="toSettingsBtn">Settings</button>
+      <button id="modeToggleBtn">Toggle Dark Mode</button>
       <input
         type="file"
         id="uploadInput"
@@ -583,12 +662,12 @@
       }
     });
 
-    /* ─── IMPORTANT CHANGE: Ignore Space/Arrows if typing in #newNote ────────────────── */
+    /* ─── IGNORE SPACE/ARROWS WHEN FOCUS IN #newNote ────────────────────────── */
     document.addEventListener('keydown', (event) => {
       const activeEl = document.activeElement;
       const newNoteDiv = document.getElementById('newNote');
       if (activeEl === newNoteDiv || newNoteDiv.contains(activeEl)) {
-        return; // allow normal typing/space/navigation inside the note
+        return;
       }
       const key = event.key;
       if (!sections.length) return;
@@ -608,7 +687,6 @@
     });
 
     /* ─── JAVASCRIPT FOR NOTES APP (Column 3) ──────────────────────────── */
-    // Selectors
     const toSettingsBtn = document.getElementById('toSettingsBtn');
     const backBtn = document.getElementById('backBtn');
     const mainView = document.getElementById('mainView');
@@ -630,6 +708,8 @@
     const searchInput = document.getElementById('searchInput');
     const filterTypeSelect = document.getElementById('filterTypeSelect');
 
+    const modeToggleBtn = document.getElementById('modeToggleBtn');
+
     // Storage keys
     const NOTES_KEY = 'localNotesApp_notes';
     const TYPES_KEY = 'localNotesApp_types';
@@ -637,7 +717,7 @@
     // Default types
     const DEFAULT_TYPES = ['Note', 'Query'];
 
-    // Retrieve types from localStorage or initialize defaults
+    // Retrieve types or initialize defaults
     function getStoredTypes() {
       const saved = localStorage.getItem(TYPES_KEY);
       try {
@@ -649,11 +729,9 @@
       localStorage.setItem(TYPES_KEY, JSON.stringify(DEFAULT_TYPES));
       return DEFAULT_TYPES;
     }
-    // Save types to localStorage
     function saveTypesToStorage(types) {
       localStorage.setItem(TYPES_KEY, JSON.stringify(types));
     }
-    // Populate the type select dropdown
     function populateTypeSelect() {
       const types = getStoredTypes();
       typeSelect.innerHTML = '';
@@ -663,14 +741,12 @@
         opt.value = type;
         opt.textContent = type;
         typeSelect.appendChild(opt);
-
         const filtOpt = document.createElement('option');
         filtOpt.value = type;
         filtOpt.textContent = type;
         filterTypeSelect.appendChild(filtOpt);
       });
     }
-    // Render types in the settings list
     function renderTypesList() {
       const types = getStoredTypes();
       typesList.innerHTML = '';
@@ -687,10 +763,8 @@
         li.appendChild(delBtn);
         typesList.appendChild(li);
       });
-      // After modifying types, refresh both dropdowns
       populateTypeSelect();
     }
-    // Add a new type
     function addNewType() {
       const newType = newTypeInput.value.trim();
       if (!newType) return;
@@ -707,7 +781,6 @@
       renderTypesList();
       renderNotes();
     }
-    // Delete a type by index
     function deleteType(index) {
       let types = getStoredTypes();
       if (types.length <= 1) {
@@ -721,7 +794,6 @@
       renderNotes();
     }
 
-    // Retrieve notes array from localStorage (or return empty array). Each note’s text is stored as Markdown.
     function getStoredNotes() {
       const saved = localStorage.getItem(NOTES_KEY);
       try {
@@ -730,56 +802,40 @@
         return [];
       }
     }
-    // Save notes array to localStorage
     function saveNotesToStorage(notes) {
       localStorage.setItem(NOTES_KEY, JSON.stringify(notes));
     }
-    // Convert HTML (from contentEditable) to Markdown
     function htmlToMarkdown(html) {
       let md = html;
-      // Replace <strong> and <b> with **text**
-      md = md.replace(/<strong>([\s\S]*?)<\/strong>/gi, '**$1**');
-      md = md.replace(/<b>([\s\S]*?)<\/b>/gi, '**$1**');
-      // Replace <em> and <i> with *text*
-      md = md.replace(/<em>([\s\S]*?)<\/em>/gi, '*$1*');
-      md = md.replace(/<i>([\s\S]*?)<\/i>/gi, '*$1*');
-      // Replace <br> with newline
-      md = md.replace(/<br\s*\/?>/gi, '\n');
-      // Replace paragraphs/divs with double-line breaks
-      md = md.replace(/<\/div>/gi, '\n');
+      md = md.replace(/<strong>([\s\S]*?)<\\/strong>/gi, '**$1**');
+      md = md.replace(/<b>([\s\S]*?)<\\/b>/gi, '**$1**');
+      md = md.replace(/<em>([\s\S]*?)<\\/em>/gi, '*$1*');
+      md = md.replace(/<i>([\s\S]*?)<\\/i>/gi, '*$1*');
+      md = md.replace(/<br\s*\\?>/gi, '\n');
+      md = md.replace(/<\\/div>/gi, '\n');
       md = md.replace(/<div>/gi, '');
-      md = md.replace(/<\/p>/gi, '\n\n');
+      md = md.replace(/<\\/p>/gi, '\n\n');
       md = md.replace(/<p>/gi, '');
-      // Strip any remaining tags
       md = md.replace(/<[^>]+>/g, '');
       return md.trim();
     }
-    // “safeToMarkdown” ensures that if stored text has any '<', we convert it; otherwise we assume it’s already Markdown.
     function safeToMarkdown(text) {
       if (/<[^>]+>/.test(text)) {
         return htmlToMarkdown(text);
       }
       return text;
     }
-    // Render all notes on the page, applying search & filter
     function renderNotes() {
       const notes = getStoredNotes();
       notesGrid.innerHTML = '';
-
-      // Enable/disable download
       downloadBtn.disabled = notes.length === 0;
-
-      // Get filter values
       const searchQuery = searchInput.value.trim().toLowerCase();
       const filterType = filterTypeSelect.value;
-
-      // Filter notes
       const filtered = notes.filter((note) => {
         const matchesType = filterType === '' || note.type === filterType;
         const matchesSearch = searchQuery === '' || note.text.toLowerCase().includes(searchQuery);
         return matchesType && matchesSearch;
       });
-
       if (filtered.length === 0) {
         const emptyMsg = document.createElement('p');
         emptyMsg.style.textAlign = 'center';
@@ -788,66 +844,49 @@
         notesGrid.appendChild(emptyMsg);
         return;
       }
-
-      filtered.forEach((noteObj, indexOriginal) => {
-        // We need the original index for edit/delete
+      filtered.forEach((noteObj) => {
         const originalIndex = notes.indexOf(noteObj);
-
         const card = document.createElement('div');
         card.className = 'note-card';
-
         const headerDiv = document.createElement('div');
         headerDiv.className = 'note-header';
-
         const typeBadge = document.createElement('div');
         typeBadge.className = 'note-type';
         typeBadge.textContent = noteObj.type;
-
         const timestampDiv = document.createElement('div');
         timestampDiv.className = 'note-timestamp';
         const date = new Date(noteObj.timestamp);
         timestampDiv.textContent = date.toLocaleString();
-
         headerDiv.appendChild(typeBadge);
         headerDiv.appendChild(timestampDiv);
-
         const textDiv = document.createElement('div');
         textDiv.className = 'note-text';
-        // Convert stored Markdown to HTML
         textDiv.innerHTML = marked.parse(noteObj.text);
-
         const actionsDiv = document.createElement('div');
         actionsDiv.className = 'note-actions';
-
         const editBtn = document.createElement('button');
         editBtn.className = 'edit';
         editBtn.title = 'Edit Note';
         editBtn.innerHTML = '✏️';
         editBtn.addEventListener('click', () => startEditNote(originalIndex));
-
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'delete';
         deleteBtn.title = 'Delete Note';
         deleteBtn.innerHTML = '🗑️';
         deleteBtn.addEventListener('click', () => deleteNote(originalIndex));
-
         actionsDiv.append(editBtn, deleteBtn);
-
         card.appendChild(headerDiv);
         card.appendChild(textDiv);
         card.appendChild(actionsDiv);
-
         notesGrid.appendChild(card);
       });
     }
-    // Add a new note (or finish editing an existing one). Convert HTML → Markdown before storing.
     function saveNote() {
       const rawHTML = newNoteDiv.innerHTML.trim();
       if (!rawHTML) return;
       const markdownText = htmlToMarkdown(rawHTML);
       const selectedType = typeSelect.value;
       let notes = getStoredNotes();
-
       if (newNoteDiv.dataset.editIndex != null) {
         const idx = parseInt(newNoteDiv.dataset.editIndex, 10);
         notes[idx].text = markdownText;
@@ -861,25 +900,21 @@
           type: selectedType
         });
       }
-
       saveNotesToStorage(notes);
       newNoteDiv.innerHTML = '';
       saveBtn.disabled = true;
       saveBtn.textContent = 'Save Note';
       renderNotes();
     }
-    // Delete a note by index
     function deleteNote(index) {
       let notes = getStoredNotes();
       notes.splice(index, 1);
       saveNotesToStorage(notes);
       renderNotes();
     }
-    // Begin editing an existing note: load its Markdown into the editable <div> by converting Markdown → HTML
     function startEditNote(index) {
       const notes = getStoredNotes();
       const markdownText = notes[index].text;
-      // Convert Markdown → HTML for editing
       newNoteDiv.innerHTML = marked.parse(markdownText);
       typeSelect.value = notes[index].type;
       newNoteDiv.focus();
@@ -887,12 +922,9 @@
       saveBtn.disabled = false;
       saveBtn.textContent = 'Update Note';
     }
-    // Download notes as an Excel file, storing Markdown in the "Text" column
     function downloadNotesAsExcel() {
       const notes = getStoredNotes();
       if (notes.length === 0) return;
-
-      // Worksheet data: use safeToMarkdown(...)
       const worksheetData = notes.map((note) => {
         const mdText = safeToMarkdown(note.text);
         return {
@@ -906,7 +938,6 @@
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Notes');
       XLSX.writeFile(workbook, 'notes.xlsx');
     }
-    // Parse uploaded Excel and store notes to localStorage (assume "Text" column contains Markdown)
     function uploadNotesFromExcel(file) {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -914,19 +945,16 @@
         const workbook = XLSX.read(data, { type: 'array' });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
-        // Expect columns: "Type", "Timestamp", "Text" (where Text is Markdown)
         const rows = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
-
         const parsedNotes = rows.map((row) => {
           let ts = Date.parse(row.Timestamp);
           if (isNaN(ts)) ts = Date.now();
           return {
             type: row.Type || '',
             timestamp: ts,
-            text: row.Text || '' // row.Text is Markdown
+            text: row.Text || ''
           };
         });
-
         saveNotesToStorage(parsedNotes);
         renderNotes();
         alert('Notes loaded from Excel successfully.');
@@ -934,25 +962,30 @@
       reader.readAsArrayBuffer(file);
     }
 
-    // Switch to Settings view
+    // Dark mode toggle
+    modeToggleBtn.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+      if (document.body.classList.contains('dark-mode')) {
+        modeToggleBtn.textContent = 'Toggle Light Mode';
+      } else {
+        modeToggleBtn.textContent = 'Toggle Dark Mode';
+      }
+    });
+
     function showSettings() {
       mainView.classList.add('hidden');
       settingsView.classList.remove('hidden');
     }
-    // Switch back to Main view
     function showMain() {
       settingsView.classList.add('hidden');
       mainView.classList.remove('hidden');
     }
 
-    // Initialize on page load
     document.addEventListener('DOMContentLoaded', () => {
-      // Populate types and render initial state
       populateTypeSelect();
       renderTypesList();
       renderNotes();
 
-      // Event listeners
       toSettingsBtn.addEventListener('click', showSettings);
       backBtn.addEventListener('click', showMain);
 
@@ -967,7 +1000,6 @@
 
       downloadBtn.addEventListener('click', downloadNotesAsExcel);
 
-      // Upload Excel logic
       uploadInput.addEventListener('change', () => {
         uploadBtn.disabled = !uploadInput.files.length;
       });
@@ -979,7 +1011,6 @@
         }
       });
 
-      // Search & filter listeners
       searchInput.addEventListener('input', renderNotes);
       filterTypeSelect.addEventListener('change', renderNotes);
 
