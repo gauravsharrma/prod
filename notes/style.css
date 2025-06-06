@@ -1,1 +1,472 @@
+/* ─── GLOBAL RESET & TYPOGRAPHY ─────────────────────────────────────────── */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+html, body {
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  font-family: 'Merriweather', serif;
+  background-color: #f0f0f0;
+  color: #333;
+  transition: background-color 0.3s, color 0.3s;
+}
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  font-family: 'Merriweather', serif;
+}
+textarea, select, input {
+  font-family: 'Merriweather', serif;
+}
 
+/* ─── LAYOUT: THREE COLUMNS ────────────────────────────────────────────── */
+body {
+  display: flex;
+  flex-direction: row;
+}
+.col-markdown {
+  width: 10%;
+  background-color: #fafafa;
+  border-right: 1px solid #ccc;
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+.col-html {
+  width: 60%;
+  background-color: #fafafa;
+  border-right: 1px solid #ccc;
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+.col-notes {
+  width: 30%;
+  background-color: #f4f4f9;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  transition: background-color 0.3s;
+}
+
+/* ─── COLUMN 1: MARKDOWN INPUT ───────────────────────────────────── */
+.col-markdown textarea {
+  flex: 1;
+  width: 100%;
+  resize: none;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-family: monospace;
+  background-color: #fff;
+  color: #000;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+.col-markdown button {
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  background-color: #4a90e2;
+  color: #fff;
+  transition: background-color 0.3s;
+}
+.col-markdown button:disabled {
+  background-color: #999;
+  cursor: default;
+}
+
+/* ─── COLUMN 2: HTML OUTPUT & CONTROLS ────────────────────────── */
+.col-html .controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  border-bottom: 1px solid #ccc;
+  background-color: #fff;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+.col-html .nav-buttons,
+.col-html .font-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+.col-html .controls button {
+  padding: 0.4rem 0.8rem;
+  font-size: 1rem;
+  background-color: #4a90e2;
+  color: #fff;
+  transition: background-color 0.3s;
+}
+.col-html .controls button:disabled {
+  background-color: #999;
+  cursor: default;
+}
+.col-html #htmlOutput {
+  flex: 1;
+  overflow: auto;
+  margin: 0.5rem;
+  padding: 1.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #fafafa;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #000;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+/* ─── COLUMN 3: NOTES APP ────────────────────────────────────────── */
+.notes-navbar {
+  background-color: #ffffff;
+  border-bottom: 1px solid #ccc;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: background-color 0.3s, border-color 0.3s;
+}
+.notes-navbar button {
+  background-color: #5a67d8;
+  color: #fff;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+}
+.notes-navbar button:hover {
+  background-color: #434190;
+}
+.notes-navbar input.upload-input {
+  margin-left: 0.5rem;
+}
+.hidden {
+  display: none;
+}
+.notes-container-main {
+  flex: 1;
+  overflow: auto;
+  padding: 1rem;
+  transition: background-color 0.3s;
+}
+.notes-container-main h1 {
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+/* Use a contentEditable <div> so bold (and other inline tags) persist */
+.note-input {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+.note-input div#newNote {
+  width: 100%;
+  min-height: 80px;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: #fff;
+  color: #000;
+  overflow-y: auto;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+.note-input div#newNote:focus {
+  outline: 2px solid #5a67d8;
+}
+.note-input .controls {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+.note-input select,
+.note-input button.save {
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  cursor: pointer;
+  color: #000;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+.note-input select {
+  flex: 1 1 120px;
+}
+.note-input button.save {
+  background-color: #5a67d8;
+  color: #fff;
+  border: none;
+  transition: background-color 0.3s;
+}
+.note-input button.save:disabled {
+  background-color: #a3aedb;
+  cursor: not-allowed;
+}
+.note-input button.save:hover:not(:disabled) {
+  background-color: #434190;
+}
+
+.download-btn,
+.upload-btn {
+  display: block;
+  margin: 0.5rem auto;
+  padding: 0.5rem 1.5rem;
+  font-size: 1rem;
+  background-color: #48bb78;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+.download-btn:disabled,
+.upload-btn:disabled {
+  background-color: #9ae6b4;
+  cursor: not-allowed;
+}
+.download-btn:hover:not(:disabled),
+.upload-btn:hover:not(:disabled) {
+  background-color: #2f855a;
+}
+.upload-input {
+  display: block;
+}
+
+/* ─── SEARCH & FILTER CONTAINER ───────────────────────────────────── */
+.filter-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+}
+.filter-container input#searchInput,
+.filter-container select#filterTypeSelect {
+  width: 100%;
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #fff;
+  color: #000;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+.notes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.note-card {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: background-color 0.3s, color 0.3s, box-shadow 0.3s;
+}
+.note-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+.note-type {
+  background-color: #edf2f7;
+  color: #1a202c;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  transition: background-color 0.3s, color 0.3s;
+}
+.note-timestamp {
+  font-size: 0.75rem;
+  color: #666;
+}
+.note-text {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  color: #000;
+  transition: color 0.3s;
+}
+.note-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+.note-actions button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  font-size: 1rem;
+  transition: color 0.3s;
+}
+.note-actions button.delete {
+  color: #e53e3e;
+}
+.note-actions button.delete:hover {
+  color: #9b2c2c;
+}
+.note-actions button.edit {
+  color: #2b6cb0;
+}
+.note-actions button.edit:hover {
+  color: #2c5282;
+}
+
+.settings-container {
+  padding: 1rem;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: background-color 0.3s, color 0.3s;
+}
+.settings-list {
+  margin-bottom: 1rem;
+}
+.settings-list ul {
+  list-style: none;
+}
+.settings-list li {
+  background-color: #edf2f7;
+  color: #1a202c;
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.3s, color 0.3s;
+}
+.settings-list li span {
+  flex: 1;
+}
+.settings-list li button.delete-type {
+  background: none;
+  border: none;
+  color: #e53e3e;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: color 0.3s;
+}
+.settings-list li button.delete-type:hover {
+  color: #9b2c2c;
+}
+.add-type-form {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.add-type-form input {
+  flex: 1 1 150px;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  background-color: #fff;
+  color: #000;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+.add-type-form button {
+  background-color: #48bb78;
+  color: #fff;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+.add-type-form button:disabled {
+  background-color: #9ae6b4;
+  cursor: not-allowed;
+}
+.add-type-form button:hover:not(:disabled) {
+  background-color: #2f855a;
+}
+
+/* ─── DARK MODE OVERRIDES ──────────────────────────────────────────── */
+body.dark-mode {
+  background-color: #121212;
+  color: #e0e0e0;
+}
+body.dark-mode .col-markdown {
+  background-color: #1e1e1e;
+  border-right-color: #444;
+}
+body.dark-mode .col-html {
+  background-color: #1e1e1e;
+  border-right-color: #444;
+}
+body.dark-mode .col-notes {
+  background-color: #1e1e1e;
+}
+body.dark-mode .col-markdown textarea,
+body.dark-mode .note-input div#newNote,
+body.dark-mode .filter-container input,
+body.dark-mode .filter-container select,
+body.dark-mode textarea,
+body.dark-mode select,
+body.dark-mode input {
+  background-color: #2e2e2e;
+  color: #e0e0e0;
+  border-color: #555;
+}
+body.dark-mode .notes-navbar,
+body.dark-mode .col-html .controls {
+  background-color: #2e2e2e;
+  border-bottom-color: #444;
+}
+body.dark-mode .notes-navbar button,
+body.dark-mode .col-markdown button,
+body.dark-mode .col-html .controls button,
+body.dark-mode .filter-container input,
+body.dark-mode .filter-container select,
+body.dark-mode .download-btn,
+body.dark-mode .upload-btn {
+  background-color: #444;
+  color: #e0e0e0;
+}
+body.dark-mode .download-btn:hover,
+body.dark-mode .upload-btn:hover,
+body.dark-mode .notes-navbar button:hover,
+body.dark-mode .note-input button.save:hover,
+body.dark-mode .add-type-form button:hover {
+  background-color: #666;
+}
+body.dark-mode .note-card {
+  background-color: #2e2e2e;
+  box-shadow: none;
+}
+body.dark-mode .note-type {
+  background-color: #444;
+  color: #ccc;
+}
+body.dark-mode .note-text {
+  color: #ddd;
+}
+body.dark-mode .settings-container,
+body.dark-mode .add-type-form input,
+body.dark-mode .note-input div#newNote,
+body.dark-mode .filter-container select {
+  background-color: #2e2e2e;
+  color: #e0e0e0;
+}
