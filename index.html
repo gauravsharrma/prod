@@ -2,128 +2,46 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ToolboxAI</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: #f9f9f9;
-      color: #333;
-    }
-    .hero {
-      background-color: #E5CCFF;
-      text-align: center;
-      padding: 60px 20px;
-    }
-    .hero h1 {
-      margin: 0;
-      font-size: 3rem;
-      color: #A259FF;
-    }
-    .hero p {
-      margin: 10px auto 0;
-      font-size: 1.125rem;
-      max-width: 700px;
-      color: #4F4F4F;
-    }
-    .tools-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 20px;
-      max-width: 1200px;
-      margin: 40px auto;
-      padding: 0 20px 60px;
-    }
-    .card {
-      background-color: #fff;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      text-align: center;
-      padding: 30px 20px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    .card .icon {
-      font-size: 48px;
-      margin-bottom: 20px;
-      color: #A259FF;
-    }
-    .card h3 {
-      margin: 0 0 10px;
-      font-size: 1.25rem;
-      color: #333;
-    }
-    .card p {
-      flex-grow: 1;
-      font-size: 0.95rem;
-      color: #4F4F4F;
-      margin-bottom: 20px;
-    }
-    .card button {
-      background-color: #5BAFFF;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 12px 20px;
-      font-size: 0.95rem;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-    .card button:hover {
-      background-color: #3894E0;
-    }
-  </style>
+  <title>Index of HTML Files</title>
 </head>
 <body>
-  <section class="hero">
-    <h1>ToolboxAI</h1>
-    <p>Unlock your creative and productive potential with our suite of intelligent AI-powered tools. Each tool is designed for simplicity and power, helping you achieve more with less effort.</p>
-  </section>
+  <div id="links"></div>
 
-  <section class="tools-container">
-    <div class="card">
-      <div class="icon">📝</div>
-      <h3>Markdown reader</h3>
-      <p>Quickly converts markdown to html</p>
-      <button onclick="window.open('markdown_reader.html', '_blank')">Summarize Text</button>
-    </div>
+  <script>
+    (function() {
+      // Get the current file name
+      const pathParts = window.location.pathname.split('/');
+      const currentFile = pathParts.pop() || pathParts.pop(); // handles trailing slash if any
 
-    <div class="card">
-      <div class="icon">🖼️</div>
-      <h3>Image Enhancer</h3>
-      <p>Improve the quality of your images with AI-powered enhancements.</p>
-      <button onclick="window.open('markdown_reader.html', '_blank')">Enhance Image</button>
-    </div>
+      // Build the directory URL (relative)
+      const dirPath = pathParts.join('/') + '/';
 
-    <div class="card">
-      <div class="icon">&lt;/&gt;</div>
-      <h3>Code Generator</h3>
-      <p>Generate code snippets in various programming languages.</p>
-      <button onclick="window.open('markdown_reader.html', '_blank')">Generate Code</button>
-    </div>
+      // Fetch the directory listing (requires that the server provides an auto-generated index)
+      fetch(dirPath)
+        .then(response => response.text())
+        .then(text => {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(text, 'text/html');
+          const anchors = doc.querySelectorAll('a');
+          const container = document.getElementById('links');
 
-    <div class="card">
-      <div class="icon">🔄</div>
-      <h3>Content Paraphraser</h3>
-      <p>Rewrite text to avoid plagiarism and improve clarity.</p>
-      <button onclick="window.open('markdown_reader.html', '_blank')">Paraphrase Content</button>
-    </div>
-
-    <div class="card">
-      <div class="icon">💡</div>
-      <h3>Idea Generator</h3>
-      <p>Brainstorm new ideas for projects, content, or business ventures.</p>
-      <button onclick="window.open('markdown_reader.html', '_blank')">Get Ideas</button>
-    </div>
-
-    <div class="card">
-      <div class="icon">😊</div>
-      <h3>Sentiment Analyzer</h3>
-      <p>Analyze text to determine the underlying sentiment.</p>
-      <button onclick="window.open('markdown_reader.html', '_blank')">Analyze Sentiment</button>
-    </div>
-  </section>
+          anchors.forEach(a => {
+            const href = a.getAttribute('href');
+            // Only include .html files, excluding the current file
+            if (href && href.endsWith('.html') && href !== currentFile) {
+              const link = document.createElement('a');
+              link.href = href;
+              link.textContent = href;
+              container.appendChild(link);
+              container.appendChild(document.createTextNode(' ')); // space-separated
+            }
+          });
+        })
+        .catch(err => {
+          console.error('Directory listing fetch failed:', err);
+          document.getElementById('links').textContent = 'Unable to fetch directory listing.';
+        });
+    })();
+  </script>
 </body>
 </html>
