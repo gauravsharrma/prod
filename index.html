@@ -5,43 +5,8 @@
   <title>Index of HTML Files</title>
 </head>
 <body>
-  <div id="links"></div>
-
-  <script>
-    (function() {
-      // Get the current file name
-      const pathParts = window.location.pathname.split('/');
-      const currentFile = pathParts.pop() || pathParts.pop(); // handles trailing slash if any
-
-      // Build the directory URL (relative)
-      const dirPath = pathParts.join('/') + '/';
-
-      // Fetch the directory listing (requires that the server provides an auto-generated index)
-      fetch(dirPath)
-        .then(response => response.text())
-        .then(text => {
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(text, 'text/html');
-          const anchors = doc.querySelectorAll('a');
-          const container = document.getElementById('links');
-
-          anchors.forEach(a => {
-            const href = a.getAttribute('href');
-            // Only include .html files, excluding the current file
-            if (href && href.endsWith('.html') && href !== currentFile) {
-              const link = document.createElement('a');
-              link.href = href;
-              link.textContent = href;
-              container.appendChild(link);
-              container.appendChild(document.createTextNode(' ')); // space-separated
-            }
-          });
-        })
-        .catch(err => {
-          console.error('Directory listing fetch failed:', err);
-          document.getElementById('links').textContent = 'Unable to fetch directory listing.';
-        });
-    })();
-  </script>
+  <a href="markdown_reader.html">Markdown Reader</a>
+  <a href="/notes">Notes</a>
+  
 </body>
 </html>
