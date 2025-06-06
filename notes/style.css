@@ -419,6 +419,18 @@ body.dark-mode .col-html {
 body.dark-mode .col-notes {
   background-color: #1e1e1e;
 }
+
+/* ★★★ Add these two rules to make the HTML Output (second column) go dark ★★★ */
+body.dark-mode .col-html #htmlOutput {
+  background-color: #2e2e2e;
+  color: #e0e0e0;
+  border-color: #555;
+}
+body.dark-mode .col-html .controls {
+  background-color: #2e2e2e;
+  border-bottom-color: #444;
+}
+
 body.dark-mode .col-markdown textarea,
 body.dark-mode .note-input div#newNote,
 body.dark-mode .filter-container input,
