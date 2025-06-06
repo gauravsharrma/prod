@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Merriweather Font -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap"
+    rel="stylesheet"
+  />
+  <title>Project Schedule Viewer</title>
+  <style>
+    body {
+      font-family: "Merriweather", serif;
+    }
+    /* Each detail block uses a CSS variable for padding & font size */
+    .detail-block {
+      padding: calc(var(--scale) * 0.5rem);
+      font-size: calc(var(--scale) * 1rem);
+    }
+    /* Highlighted list item */
+    .highlighted {
+      @apply bg-blue-200 dark:bg-blue-600;
+    }
+  </style>
+</head>
+<body class="bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-200">
+  <!-- Top Navigation Bar -->
+  <nav class="flex items-center justify-between px-4 py-2 bg-gray-100 dark:bg-gray-800 border-b border-gray-300 dark:border-gray-700">
+    <!-- Hamburger/Menu Buttons on Left -->
+    <div class="flex items-center space-x-2">
+      <button id="hamburger-btn" class="focus:outline-none">
+        <!-- Simple Hamburger Icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800 dark:text-gray-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path id="hamburger-path" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+      <button id="prev-btn" class="px-2 py-1 border rounded-md bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100 focus:outline-none" title="Previous Task">
+        &#8592;
+      </button>
+      <button id="next-btn" class="px-2 py-1 border rounded-md bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100 focus:outline-none" title="Next Task">
+        &#8594;
+      </button>
+    </div>
+
+    <!-- Title Placeholder -->
+    <div class="text-lg font-semibold text-gray-800 dark:text-gray-100">
+      Project Schedule Viewer
+    </div>
+
+    <!-- Right-Side Controls: Theme Toggle & Scale Buttons -->
+    <div class="flex items-center space-x-2">
+      <button
+        id="theme-toggle"
+        class="px-3 py-1 border rounded-md bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-gray-100 focus:outline-none"
+      >
+        Toggle Dark Mode
+      </button>
+      <button
+        id="increase-scale"
+        class="px-3 py-1 border rounded-md bg-green-200 text-green-900 dark:bg-green-700 dark:text-green-100 focus:outline-none"
+        title="Increase block size & font"
+      >
+        +
+      </button>
+      <button
+        id="decrease-scale"
+        class="px-3 py-1 border rounded-md bg-red-200 text-red-900 dark:bg-red-700 dark:text-red-100 focus:outline-none"
+        title="Decrease block size & font"
+      >
+        –
+      </button>
+    </div>
+  </nav>
+
+  <!-- Hamburger Menu Panel (initially hidden) -->
+  <div id="menu-panel" class="fixed top-0 left-0 h-full w-64 bg-gray-50 dark:bg-gray-800 border-r border-gray-300 dark:border-gray-700 transform -translate-x-full transition-transform duration-200 z-20">
+    <div class="flex flex-col h-full">
+      <!-- Close Button -->
+      <div class="flex justify-end p-2">
+        <button id="close-menu-btn" class="focus:outline-none">
+          <svg xmlns="https://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800 dark:text-gray-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Upload Button -->
+      <div class="px-4 py-2">
+        <label
+          for="file-input"
+          class="cursor-pointer px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition w-full text-center block"
+          >Upload Project Schedule</label
+        >
+        <input id="file-input" type="file" accept=".xlsx" class="hidden" />
+      </div>
+
+      <!-- Column Selector -->
+      <div id="column-selector" class="px-4 py-2 mt-4 overflow-y-auto flex-1 hidden">
+        <p class="font-semibold mb-2 text-gray-700 dark:text-gray-300">Select columns to display:</p>
+        <div id="column-checkboxes" class="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto p-2 border rounded border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-700"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overlay (to close menu when clicking outside) -->
+  <div id="overlay" class="fixed inset-0 bg-black bg-opacity-30 hidden z-10"></div>
+
+  <!-- Main Container: Two Columns (10% & 90%) -->
+  <div class="flex items-start justify-center h-[calc(100vh-3rem)] mt-0 px-4 pt-4">
+    <!-- Left Frame: Task IDs -->
+    <div
+      id="left-frame"
+      class="w-[10%] h-full border-r border-gray-300 dark:border-gray-700 overflow-y-auto bg-gray-50 dark:bg-gray-800"
+    >
+      <ul id="task-list" class="flex flex-col space-y-1 p-2"></ul>
+    </div>
+
+    <!-- Right Frame: Task Details -->
+    <!-- Initialize CSS variable --scale on this container -->
+    <div id="right-frame" class="w-[90%] h-full p-4 overflow-y-auto" style="--scale: 1">
+      <p class="text-lg text-gray-500 dark:text-gray-400">Select a task ID to view details.</p>
+    </div>
+  </div>
+
+  <!-- SheetJS for Excel parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script>
+    // References to DOM elements
+    const htmlEl = document.documentElement;
+    const themeToggleBtn = document.getElementById("theme-toggle");
+    const increaseScaleBtn = document.getElementById("increase-scale");
+    const decreaseScaleBtn = document.getElementById("decrease-scale");
+    const fileInput = document.getElementById("file-input");
+    const columnSelector = document.getElementById("column-selector");
+    const columnCheckboxes = document.getElementById("column-checkboxes");
+    const taskList = document.getElementById("task-list");
+    const rightFrame = document.getElementById("right-frame");
+
+    const hamburgerBtn = document.getElementById("hamburger-btn");
+    const menuPanel = document.getElementById("menu-panel");
+    const closeMenuBtn = document.getElementById("close-menu-btn");
+    const overlay = document.getElementById("overlay");
+
+    const prevBtn = document.getElementById("prev-btn");
+    const nextBtn = document.getElementById("next-btn");
+
+    // Data storage
+    let records = [];
+    let columnNames = [];
+    // Current scale factor
+    let scale = 1;
+    // Currently selected index
+    let currentIndex = null;
+
+    // THEME TOGGLE (ensures tailwind 'dark' class works on <html>)
+    themeToggleBtn.addEventListener("click", () => {
+      htmlEl.classList.toggle("dark");
+    });
+
+    // SCALE CONTROLS
+    function updateScale(newScale) {
+      scale = newScale;
+      rightFrame.style.setProperty("--scale", scale);
+    }
+    increaseScaleBtn.addEventListener("click", () => {
+      updateScale(scale + 0.1);
+    });
+    decreaseScaleBtn.addEventListener("click", () => {
+      updateScale(Math.max(0.5, scale - 0.1));
+    });
+
+    // OPEN/CLOSE HAMBURGER MENU
+    hamburgerBtn.addEventListener("click", () => {
+      menuPanel.classList.remove("-translate-x-full");
+      overlay.classList.remove("hidden");
+    });
+    closeMenuBtn.addEventListener("click", () => {
+      menuPanel.classList.add("-translate-x-full");
+      overlay.classList.add("hidden");
+    });
+    // Close if clicking overlay
+    overlay.addEventListener("click", () => {
+      menuPanel.classList.add("-translate-x-full");
+      overlay.classList.add("hidden");
+    });
+
+    // FILE UPLOAD & COLUMN SELECTION
+    fileInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const data = evt.target.result;
+        const workbook = XLSX.read(data, { type: "array" });
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+        records = jsonData;
+        if (records.length === 0) return;
+
+        // Extract column names
+        columnNames = Object.keys(records[0]);
+
+        // Populate Column Selector checkboxes
+        columnCheckboxes.innerHTML = "";
+        columnNames.forEach((colName) => {
+          const wrapper = document.createElement("div");
+          wrapper.className = "flex items-center space-x-2";
+
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.value = colName;
+          checkbox.id = `col-${colName}`;
+          checkbox.checked = true;
+          checkbox.className = "h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded";
+
+          const label = document.createElement("label");
+          label.htmlFor = `col-${colName}`;
+          label.className = "text-sm text-gray-700 dark:text-gray-300";
+          label.textContent = colName;
+
+          wrapper.appendChild(checkbox);
+          wrapper.appendChild(label);
+          columnCheckboxes.appendChild(wrapper);
+        });
+
+        // Show the column selector panel
+        columnSelector.classList.remove("hidden");
+
+        // Populate Task ID list
+        taskList.innerHTML = "";
+        records.forEach((row, index) => {
+          const taskId = row["Sub-Task ID"];
+          if (taskId !== undefined && taskId !== "") {
+            const li = document.createElement("li");
+            li.className =
+              "cursor-pointer px-2 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition";
+            li.textContent = taskId;
+            li.dataset.index = index;
+            li.addEventListener("click", () => selectTask(index));
+            taskList.appendChild(li);
+          }
+        });
+
+        // Reset currentIndex
+        currentIndex = null;
+        rightFrame.innerHTML = `<p class="text-lg text-gray-500 dark:text-gray-400">Select a task ID to view details.</p>`;
+      };
+      reader.readAsArrayBuffer(file);
+    });
+
+    // Function to highlight the selected list item
+    function highlightListItem(index) {
+      const prevHighlighted = taskList.querySelector("li.highlighted");
+      if (prevHighlighted) prevHighlighted.classList.remove("highlighted");
+
+      const newItem = taskList.querySelector(`li[data-index="${index}"]`);
+      if (newItem) {
+        newItem.classList.add("highlighted");
+        newItem.scrollIntoView({ block: "nearest" });
+      }
+    }
+
+    // Function to map dependency IDs to Sub-Task Names
+    function getDependencyNames(depValue) {
+      if (!depValue) return "";
+      // Split on commas or semicolons
+      const ids = depValue.split(/[,;]\s*/).filter((id) => id.trim() !== "");
+      const names = ids.map((id) => {
+        // Find the record with matching Sub-Task ID
+        const rec = records.find((r) => String(r["Sub-Task ID"]).trim() === id.trim());
+        return rec ? rec["Sub-Task Name"] || id.trim() : id.trim();
+      });
+      return names.join(", ");
+    }
+
+    // Function to render record at a given index
+    function renderRecordAtIndex(index) {
+      if (index < 0 || index >= records.length) return;
+      const record = records[index];
+      rightFrame.innerHTML = "";
+
+      // Determine selected columns
+      const selectedCols = Array.from(
+        columnCheckboxes.querySelectorAll("input[type='checkbox']:checked")
+      ).map((cb) => cb.value);
+
+      if (selectedCols.length === 0) {
+        const msg = document.createElement("p");
+        msg.className = "text-lg text-red-500 dark:text-red-400";
+        msg.textContent = "No columns selected. Please check at least one column.";
+        rightFrame.appendChild(msg);
+      } else {
+        // Render each selected column as alternating-color blocks
+        selectedCols.forEach((colName, idx) => {
+          let value = record[colName] || "";
+
+          // If this is the Dependencies column, map IDs to task names
+          if (colName === "Dependencies") {
+            value = getDependencyNames(value);
+          }
+
+          const blockDiv = document.createElement("div");
+          blockDiv.className =
+            `detail-block mb-3 rounded-lg ` +
+            (idx % 2 === 0
+              ? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100"
+              : "bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-gray-100");
+
+          const label = document.createElement("div");
+          label.className = "font-semibold";
+          label.textContent = colName + ":";
+
+          const content = document.createElement("div");
+          content.textContent = value;
+
+          blockDiv.appendChild(label);
+          blockDiv.appendChild(content);
+          rightFrame.appendChild(blockDiv);
+        });
+      }
+
+      // Highlight the corresponding list item
+      highlightListItem(index);
+    }
+
+    // Select a task by index (called on list click or navigation)
+    function selectTask(index) {
+      currentIndex = index;
+      renderRecordAtIndex(index);
+    }
+
+    // Navigate to previous record
+    function prevRecord() {
+      if (currentIndex === null) return;
+      const newIndex = currentIndex - 1;
+      if (newIndex >= 0) {
+        selectTask(newIndex);
+      }
+    }
+
+    // Navigate to next record
+    function nextRecord() {
+      if (currentIndex === null) return;
+      const newIndex = currentIndex + 1;
+      if (newIndex < records.length) {
+        selectTask(newIndex);
+      }
+    }
+
+    // Prev/Next button event listeners
+    prevBtn.addEventListener("click", prevRecord);
+    nextBtn.addEventListener("click", nextRecord);
+
+    // Keyboard navigation: ArrowLeft, ArrowRight, Space → next
+    window.addEventListener("keydown", (e) => {
+      // Only act if a task is already selected
+      if (currentIndex === null) return;
+
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        prevRecord();
+      } else if (e.key === "ArrowRight" || e.key === " ") {
+        e.preventDefault();
+        nextRecord();
+      }
+    });
+  </script>
+</body>
+</html>
