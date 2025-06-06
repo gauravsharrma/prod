@@ -1,1 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Markdown → HTML & Local Notes (Unified)</title>
+
+  <!-- Merriweather font (for entire page) -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Our own CSS -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Marked.js (Markdown parser) -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- SheetJS (xlsx) for Excel export/import -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+
+<body>
+  <!-- ─── COLUMN 1: Markdown Input ─────────────────────────────────────── -->
+  <div class="col-markdown">
+    <textarea id="markdownInput" placeholder="Paste your Markdown…"></textarea>
+    <button id="convertBtn">Convert</button>
+  </div>
+
+  <!-- ─── COLUMN 2: HTML Output & Controls ──────────────────────────── -->
+  <div class="col-html">
+    <div class="controls">
+      <div class="nav-buttons">
+        <button id="prevBtn" disabled>Previous</button>
+        <button id="nextBtn" disabled>Next</button>
+      </div>
+      <div class="font-buttons">
+        <button id="decreaseFontBtn">–</button>
+        <button id="increaseFontBtn">+</button>
+      </div>
+    </div>
+    <div id="htmlOutput"><em>Converted HTML will appear here.</em></div>
+  </div>
+
+  <!-- ─── COLUMN 3: Notes App ────────────────────────────────────────── -->
+  <div class="col-notes">
+    <!-- Navbar with Settings button, Dark/Light toggle, and Upload -->
+    <div class="notes-navbar">
+      <button id="toSettingsBtn">Settings</button>
+      <button id="modeToggleBtn">Toggle Dark Mode</button>
+      <input
+        type="file"
+        id="uploadInput"
+        class="upload-input"
+        accept=".xlsx, .xls"
+      />
+      <button id="uploadBtn" class="upload-btn" disabled>Upload Excel</button>
+    </div>
+
+    <!-- Main View: Add / List Notes -->
+    <div id="mainView" class="notes-container-main">
+      <h1>My Notes</h1>
+
+      <!-- Note Input Section (contenteditable <div> for rich text) -->
+      <div class="note-input">
+        <div id="newNote" contenteditable="true" placeholder="Write your note here."></div>
+        <div class="controls">
+          <select id="typeSelect">
+            <!-- Populated dynamically -->
+          </select>
+          <button id="saveBtn" class="save" disabled>Save Note</button>
+        </div>
+      </div>
+
+      <!-- Download Excel Button -->
+      <button id="downloadBtn" class="download-btn" disabled>
+        Download Notes as Excel
+      </button>
+
+      <!-- Search & Filter (Type) -->
+      <div class="filter-container">
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Search notes…"
+        />
+        <select id="filterTypeSelect">
+          <option value="">All Types</option>
+          <!-- Populated dynamically -->
+        </select>
+      </div>
+
+      <!-- Notes Listing -->
+      <div id="notesGrid" class="notes-grid">
+        <!-- Dynamically injected note cards -->
+      </div>
+    </div>
+
+    <!-- Settings View -->
+    <div id="settingsView" class="notes-container-main hidden">
+      <h2>Settings</h2>
+      <div class="settings-container">
+        <!-- Current Types List -->
+        <div class="settings-list">
+          <h3>Manage Types</h3>
+          <ul id="typesList">
+            <!-- Populated dynamically -->
+          </ul>
+        </div>
+        <!-- Add New Type Form -->
+        <div class="add-type-form">
+          <input
+            id="newTypeInput"
+            type="text"
+            placeholder="Enter new type (e.g. Task)"
+          />
+          <button id="addTypeBtn" disabled>Add Type</button>
+        </div>
+        <!-- Back to Notes Button -->
+        <div style="margin-top: 1rem; text-align: center;">
+          <button id="backBtn">Back to Notes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Our own JavaScript -->
+  <script src="script.js"></script>
+</body>
+</html>
 
