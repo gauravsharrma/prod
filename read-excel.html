@@ -26,7 +26,7 @@
 </head>
 <body class="dark bg-black text-white font-sans h-screen overflow-hidden relative">
   <!-- Hamburger Menu Toggle -->
-  <button id="menu-toggle" class="absolute top-4 left-4 p-2 bg-gray-800 rounded focus:outline-none">
+  <button id="menu-toggle" class="absolute top-4 left-4 p-2 bg-gray-800 rounded focus:outline-none z-60">
     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
     </svg>
@@ -34,6 +34,12 @@
 
   <!-- Side Menu -->
   <div id="side-menu" class="fixed top-0 left-0 h-full w-64 bg-gray-900 p-4 space-y-4 overflow-auto hidden z-50">
+    <!-- Close Button inside menu -->
+    <button id="menu-close" class="absolute top-4 right-4 p-1 text-white">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
     <h2 class="text-lg font-bold mb-2">Menu</h2>
     <!-- File Upload -->
     <div>
@@ -70,6 +76,7 @@
     let visibleColumns = new Set();
 
     const menuToggle = document.getElementById('menu-toggle');
+    const menuClose = document.getElementById('menu-close');
     const sideMenu = document.getElementById('side-menu');
     const fileInput = document.getElementById('file-input');
     const leftFrame = document.getElementById('left-frame');
@@ -79,9 +86,8 @@
     const columnSelectors = document.getElementById('column-selectors');
 
     // Toggle side menu
-    menuToggle.addEventListener('click', () => {
-      sideMenu.classList.toggle('hidden');
-    });
+    menuToggle.addEventListener('click', () => sideMenu.classList.toggle('hidden'));
+    menuClose.addEventListener('click', () => sideMenu.classList.add('hidden'));
 
     fileInput.addEventListener('change', handleFile);
     increaseFontBtn.addEventListener('click', () => adjustFont(2));
