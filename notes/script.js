@@ -11,6 +11,8 @@ const htmlOutput = document.getElementById('htmlOutput');
 const increaseFontBtn = document.getElementById('increaseFontBtn');
 const decreaseFontBtn = document.getElementById('decreaseFontBtn');
 const splitOption = document.getElementById('splitOption');
+const progressIndicator = document.getElementById('progressIndicator');
+
 
 function renderSection(index) {
   if (!sections.length) return;
@@ -18,6 +20,8 @@ function renderSection(index) {
   htmlOutput.innerHTML = marked.parse(md);
   prevBtn.disabled = index <= 0;
   nextBtn.disabled = index >= sections.length - 1;
+    // <-- NEW: show “current/total”
+  progressIndicator.textContent = `${index + 1}/${sections.length}`;
 }
 
 convertBtn.addEventListener('click', () => {
