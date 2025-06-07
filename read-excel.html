@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Excel Viewer</n>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Excel Viewer</title>
   <!-- Merriweather Font -->
   <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
   <!-- Tailwind CDN -->
@@ -11,7 +11,11 @@
   <script>
     tailwind.config = {
       darkMode: 'class',
-      theme: { extend: { fontFamily: { sans: ['Merriweather','serif'] } } }
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Merriweather', 'serif'] }
+        }
+      }
     };
   </script>
   <!-- SheetJS -->
@@ -101,12 +105,12 @@
     document.addEventListener('keydown', handleNavigation);
 
     function handleFile(e) {
+      if (!e.target.files.length) return;
       const reader = new FileReader();
       reader.onload = evt => {
         const wb = XLSX.read(evt.target.result, { type: 'array' });
         const ws = wb.Sheets[wb.SheetNames[0]];
         data = XLSX.utils.sheet_to_json(ws, { header:1 });
-        // init columns
         visibleColumns.clear(); data[0].forEach((_,i)=>visibleColumns.add(i));
         renderColumnSelectors(); renderList(); renderDetail(0);
       };
@@ -115,72 +119,86 @@
 
     function renderColumnSelectors() {
       colSelectors.innerHTML = '';
-      data[0].forEach((h,i) => {
-        const cb = document.createElement('input'); cb.type='checkbox'; cb.id=`col-${i}`;
-        cb.checked = visibleColumns.has(i); cb.className='mr-2';
-        cb.addEventListener('change', ()=>{
-          cb.checked ? visibleColumns.add(i) : visibleColumns.delete(i);
+      data[0].forEach((header, idx) => {
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.id = `col-${idx}`;
+        cb.checked = visibleColumns.has(idx);
+        cb.className = 'mr-2';
+        cb.addEventListener('change', () => {
+          cb.checked ? visibleColumns.add(idx) : visibleColumns.delete(idx);
           renderDetail(currentIndex);
         });
-        const lbl = document.createElement('label'); lbl.htmlFor=cb.id; lbl.className='font-normal'; lbl.textContent = h || `Col ${i+1}`;
-        const wr = document.createElement('div'); wr.className='flex items-center'; wr.append(cb,lbl);
-        colSelectors.appendChild(wr);
+        const label = document.createElement('label');
+        label.htmlFor = cb.id;
+        label.className = 'font-normal';
+        label.textContent = header || `Col ${idx+1}`;
+        const wrapper = document.createElement('div');
+        wrapper.className = 'flex items-center';
+        wrapper.append(cb, label);
+        colSelectors.appendChild(wrapper);
       });
     }
 
     function renderList() {
       listContainer.innerHTML = '';
-      data.forEach((row,i) => {
-        const div = document.createElement('div');
-        div.textContent = row[0] || '';
-        div.className = 'p-2 cursor-pointer hover:bg-gray-800 font-normal';
-        div.addEventListener('click', ()=> selectRow(i));
-        listContainer.appendChild(div);
-      }); highlightSelected();
+      data.forEach((row, idx) => {
+        const cell = document.createElement('div');
+        cell.textContent = row[0] || '';
+        cell.className = 'p-2 cursor-pointer hover:bg-gray-800 font-normal';
+        cell.addEventListener('click', () => selectRow(idx));
+        listContainer.appendChild(cell);
+      });
+      highlightSelected();
     }
 
     function renderDetail(idx) {
       currentIndex = idx;
-      // switch container layout
-      if(viewMode === 'blocks') {
-        detailContainer.className = 'flex flex-wrap gap-2';
-      } else {
-        detailContainer.className = 'space-y-4';
-      }
+      // Layout mode
+      detailContainer.className = viewMode === 'blocks' ? 'flex flex-wrap gap-2' : 'space-y-4';
       detailContainer.innerHTML = '';
-      (data[idx]||[]).forEach((cell,i) => {
-        if(!visibleColumns.has(i)) return;
-        const hdr = data[0][i] || `Col ${i+1}`;
+      (data[idx]||[]).forEach((cell, i) => {
+        if (!visibleColumns.has(i)) return;
+        const header = data[0][i] || `Col ${i+1}`;
         const block = document.createElement('div');
-        // style per mode
-        if(viewMode === 'blocks') {
-          block.className = 'inline-block p-2 border border-gray-700 rounded';
-        } else {
-          block.className = 'p-2 border border-gray-700 rounded w-full';
-        }
-        block.style.fontSize = fontSize + 'px';
-        block.innerHTML = `<div class="font-bold mb-1">${hdr}</div><div class="font-normal">${cell}</div>`;
+        block.className = viewMode === 'blocks'
+          ? 'inline-block p-2 border border-gray-700 rounded'
+          : 'p-2 border border-gray-700 rounded w-full';
+        block.style.fontSize = `${fontSize}px`;
+        block.innerHTML = `
+          <div class="font-bold mb-1">${header}</div>
+          <div class="font-normal">${cell}</div>
+        `;
         detailContainer.appendChild(block);
-      }); highlightSelected();
+      });
+      highlightSelected();
     }
 
-    function selectRow(i) { renderDetail(i); }
-    function adjustFont(d) { fontSize = Math.max(10, fontSize + d);
-      detailContainer.querySelectorAll('div').forEach(b=> b.style.fontSize = fontSize + 'px'); }
+    function selectRow(idx) {
+      renderDetail(idx);
+    }
+
+    function adjustFont(delta) {
+      fontSize = Math.max(10, fontSize + delta);
+      detailContainer.querySelectorAll('div').forEach(b => {
+        b.style.fontSize = `${fontSize}px`;
+      });
+    }
 
     function handleNavigation(e) {
-      if(!data.length) return;
-      if(e.key === 'ArrowRight' || e.key === ' ') {
-        e.preventDefault(); renderDetail(Math.min(data.length-1, currentIndex+1));
-      }
-      if(e.key === 'ArrowLeft') {
-        e.preventDefault(); renderDetail(Math.max(0, currentIndex-1));
+      if (!data.length) return;
+      if (e.key === 'ArrowRight' || e.key === ' ') {
+        e.preventDefault();
+        renderDetail(Math.min(data.length - 1, currentIndex + 1));
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        renderDetail(Math.max(0, currentIndex - 1));
       }
     }
 
     function highlightSelected() {
-      listContainer.querySelectorAll('div').forEach((ch,i)=>{
-        ch.classList.toggle('bg-gray-800', i === currentIndex);
+      listContainer.querySelectorAll('div').forEach((el, idx) => {
+        el.classList.toggle('bg-gray-800', idx === currentIndex);
       });
     }
   </script>
