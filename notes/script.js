@@ -13,14 +13,15 @@ const decreaseFontBtn = document.getElementById('decreaseFontBtn');
 const splitOption = document.getElementById('splitOption');
 const progressIndicator = document.getElementById('progressIndicator');
 
-
 function renderSection(index) {
   if (!sections.length) return;
   const md = sections[index] || '';
   htmlOutput.innerHTML = marked.parse(md);
+
   prevBtn.disabled = index <= 0;
   nextBtn.disabled = index >= sections.length - 1;
-    // <-- NEW: show “current/total”
+
+  // update progress
   progressIndicator.textContent = `${index + 1}/${sections.length}`;
 }
 
@@ -31,7 +32,6 @@ convertBtn.addEventListener('click', () => {
   // Determine split logic based on dropdown
   switch (mode) {
     case 'dash':
-      // Split on lines that are exactly `---`
       sections = raw
         .split(/^---$/m)
         .map((s) => s.trim())
@@ -39,28 +39,32 @@ convertBtn.addEventListener('click', () => {
       break;
 
     case 'h1':
-      // Split at every level‐1 heading (keep the heading on its own section)
-      // Use lookahead so that each section begins with "# "
-      sections = raw.split(/(?=^#\s.*$)/m).map((s) => s.trim()).filter((s) => s.length > 0);
+      sections = raw
+        .split(/(?=^#\s.*$)/m)
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
       break;
 
     case 'h2':
-      // Split at every level‐2 heading
-      sections = raw.split(/(?=^##\s.*$)/m).map((s) => s.trim()).filter((s) => s.length > 0);
+      sections = raw
+        .split(/(?=^##\s.*$)/m)
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
       break;
 
     case 'para':
-      // Split paragraphs at blank‐line boundaries
-      // (two or more consecutive newlines)
-      sections = raw.split(/\n{2,}/).map((s) => s.trim()).filter((s) => s.length > 0);
+      sections = raw
+        .split(/\n{2,}/)
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
       break;
 
     case 'sentence':
-      // split on a full-stop followed by whitespace, keeping the “.” at end of each sentence
+      // split on full-stop + whitespace, keeping “.” at end
       sections = raw
-      .split(/(?<=\.)\s+/)
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0);
+        .split(/(?<=\.)\s+/)
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
       break;
 
     default:
@@ -68,6 +72,12 @@ convertBtn.addEventListener('click', () => {
   }
 
   currentIndex = 0;
+
+  // initialize progress indicator
+  progressIndicator.textContent = sections.length
+    ? `1/${sections.length}`
+    : '0/0';
+
   if (sections.length) {
     renderSection(0);
   } else {
@@ -108,10 +118,11 @@ document.addEventListener('keydown', (event) => {
   const activeEl = document.activeElement;
   const newNoteDiv = document.getElementById('newNote');
   if (activeEl === newNoteDiv || newNoteDiv.contains(activeEl)) {
-    return; // allow normal typing inside notes
+    return;
   }
   const key = event.key;
   if (!sections.length) return;
+
   if (key === ' ' || key === 'Spacebar' || key === 'ArrowRight') {
     event.preventDefault();
     if (currentIndex < sections.length - 1) {
@@ -250,19 +261,15 @@ function saveNotesToStorage(notes) {
 // Convert HTML (from contentEditable) to Markdown
 function htmlToMarkdown(html) {
   let md = html;
-  // Bold (<strong>, <b>)
   md = md.replace(/<strong>([\s\S]*?)<\/strong>/gi, '**$1**');
   md = md.replace(/<b>([\s\S]*?)<\/b>/gi, '**$1**');
-  // Italic (<em>, <i>)
   md = md.replace(/<em>([\s\S]*?)<\/em>/gi, '*$1*');
   md = md.replace(/<i>([\s\S]*?)<\/i>/gi, '*$1*');
-  // Line breaks
   md = md.replace(/<br\s*\/?>/gi, '\n');
   md = md.replace(/<\/div>/gi, '\n');
   md = md.replace(/<div>/gi, '');
   md = md.replace(/<\/p>/gi, '\n\n');
   md = md.replace(/<p>/gi, '');
-  // Strip any other HTML tags
   md = md.replace(/<[^>]+>/g, '');
   return md.trim();
 }
@@ -278,12 +285,12 @@ function renderNotes() {
   notesGrid.innerHTML = '';
   downloadBtn.disabled = notes.length === 0;
 
-  // Filter & search
   const searchQuery = searchInput.value.trim().toLowerCase();
   const filterType = filterTypeSelect.value;
   const filtered = notes.filter((note) => {
     const matchesType = filterType === '' || note.type === filterType;
-    const matchesSearch = searchQuery === '' || note.text.toLowerCase().includes(searchQuery);
+    const matchesSearch =
+      searchQuery === '' || note.text.toLowerCase().includes(searchQuery);
     return matchesType && matchesSearch;
   });
 
@@ -434,11 +441,9 @@ function uploadNotesFromExcel(file) {
 // ─── DARK MODE TOGGLE ─────────────────────────────────────────────
 modeToggleBtn.addEventListener('click', () => {
   document.body.classList.toggle('dark-mode');
-  if (document.body.classList.contains('dark-mode')) {
-    modeToggleBtn.textContent = 'Toggle Light Mode';
-  } else {
-    modeToggleBtn.textContent = 'Toggle Dark Mode';
-  }
+  modeToggleBtn.textContent = document.body.classList.contains('dark-mode')
+    ? 'Toggle Light Mode'
+    : 'Toggle Dark Mode';
 });
 
 // ─── SWITCH VIEWS: Settings ↔ Main ─────────────────────────────────
@@ -453,6 +458,9 @@ function showMain() {
 
 // ─── INITIALIZATION ON PAGE LOAD ────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  // set initial progress
+  progressIndicator.textContent = '0/0';
+
   populateTypeSelect();
   renderTypesList();
   renderNotes();
@@ -486,8 +494,7 @@ document.addEventListener('DOMContentLoaded', () => {
   filterTypeSelect.addEventListener('change', renderNotes);
 
   newTypeInput.addEventListener('input', () => {
-    const val = newTypeInput.value.trim();
-    addTypeBtn.disabled = val.length === 0;
+    addTypeBtn.disabled = newTypeInput.value.trim().length === 0;
   });
   addTypeBtn.addEventListener('click', addNewType);
 });
