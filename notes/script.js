@@ -51,6 +51,14 @@ convertBtn.addEventListener('click', () => {
       sections = raw.split(/\n{2,}/).map((s) => s.trim()).filter((s) => s.length > 0);
       break;
 
+    case 'sentence':
+      // split on a full-stop followed by whitespace, keeping the “.” at end of each sentence
+      sections = raw
+      .split(/(?<=\.)\s+/)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+      break;
+
     default:
       sections = [raw];
   }
