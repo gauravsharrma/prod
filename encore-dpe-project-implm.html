@@ -19,7 +19,8 @@
   <div id="myDiagramDiv" class="w-full h-full"></div>
 
   <script>
-    function init() {
+    // Initialize the GoJS diagram
+    function initDiagram() {
       const $ = go.GraphObject.make;
       const diagram = $(go.Diagram, "myDiagramDiv", {
         initialAutoScale: go.Diagram.AutoScaleFit,
@@ -95,10 +96,10 @@
         []
       );
 
-      // Initialize diagram
-      init();
+      return diagram;
     }
-    window.addEventListener('DOMContentLoaded', init);
+
+    window.addEventListener('DOMContentLoaded', () => initDiagram());
   </script>
 </body>
 </html>
