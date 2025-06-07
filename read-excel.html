@@ -4,28 +4,37 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Excel Viewer</title>
-  <!-- Tailwind CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
-  <!-- SheetJS -->
+  <!-- Tailwind Play CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Enable class-based dark mode
+    tailwind.config = {
+      darkMode: 'class',
+    };
+  </script>
+  <!-- SheetJS for Excel parsing -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 </head>
-<body class="bg-black text-white h-screen overflow-hidden">
+<body class="dark bg-black text-white h-screen overflow-hidden">
+  <!-- File Upload -->
   <div class="p-4">
-    <input type="file" id="file-input" accept=".xlsx, .xls" class="mb-4" />
+    <input type="file" id="file-input" accept=".xlsx, .xls" class="bg-gray-800 text-white p-2 rounded" />
   </div>
-  <div class="flex h-[calc(100vh-64px)]">
-    <!-- Left Frame -->
-    <div id="left-frame" class="w-1/12 border-r border-gray-700 overflow-auto">
-      <!-- List of first-column values -->
+  <!-- Frames Container -->
+  <div class="flex" style="height: calc(100vh - 64px);">
+    <!-- Left Frame (10%) -->
+    <div id="left-frame" class="border-r border-gray-700 overflow-auto" style="width: 10%;">
+      <!-- First-column values will appear here -->
     </div>
-    <!-- Right Frame -->
-    <div id="right-frame" class="w-11/12 p-4 overflow-auto">
-      <div class="flex items-center mb-4">
-        <button id="decrease-font" class="px-2 py-1 border border-white rounded mr-2">-</button>
+    <!-- Right Frame (90%) -->
+    <div id="right-frame" class="p-4 overflow-auto" style="width: 90%;">
+      <!-- Font size controls -->
+      <div class="flex items-center mb-4 space-x-2">
+        <button id="decrease-font" class="px-2 py-1 border border-white rounded">-</button>
         <button id="increase-font" class="px-2 py-1 border border-white rounded">+</button>
       </div>
+      <!-- Detail container for other columns -->
       <div id="detail-container" class="space-y-2">
-        <!-- Column details go here -->
       </div>
     </div>
   </div>
@@ -68,6 +77,7 @@
         cell.addEventListener('click', () => selectRow(index));
         leftFrame.appendChild(cell);
       });
+      highlightSelected();
     }
 
     function renderDetail(index) {
@@ -75,10 +85,11 @@
       detailContainer.innerHTML = '';
       const row = data[index] || [];
       row.forEach((cell, idx) => {
+        const header = data[0][idx] || `Column ${idx + 1}`;
         const block = document.createElement('div');
-        block.textContent = `${data[0][idx] || 'Column ' + (idx+1)}: ${cell}`;
+        block.textContent = `${header}: ${cell}`;
         block.className = 'p-2 border border-gray-700 rounded';
-        block.style.fontSize = fontSize + 'px';
+        block.style.fontSize = `${fontSize}px`;
         detailContainer.appendChild(block);
       });
       highlightSelected();
@@ -91,7 +102,7 @@
     function adjustFont(delta) {
       fontSize = Math.max(10, fontSize + delta);
       Array.from(detailContainer.children).forEach(block => {
-        block.style.fontSize = fontSize + 'px';
+        block.style.fontSize = `${fontSize}px`;
       });
     }
 
