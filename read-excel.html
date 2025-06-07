@@ -9,194 +9,136 @@
   <!-- Tailwind Play CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    // Enable class-based dark mode and custom font
     tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
-          fontFamily: {
-            sans: ['Merriweather', 'serif'],
-          }
+          fontFamily: { sans: ['Merriweather', 'serif'] }
         }
       }
     };
   </script>
-  <!-- SheetJS for Excel parsing -->
+  <!-- SheetJS -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 </head>
-<body class="dark bg-black text-white font-sans h-screen overflow-hidden relative">
-  <!-- Hamburger Menu Toggle -->
-  <button id="menu-toggle" class="absolute top-4 left-4 p-2 bg-gray-800 rounded focus:outline-none z-60">
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-    </svg>
-  </button>
-
+<body class="dark bg-black text-white font-sans h-screen overflow-hidden">
   <!-- Side Menu -->
   <div id="side-menu" class="fixed top-0 left-0 h-full w-64 bg-gray-900 p-4 space-y-4 overflow-auto hidden z-50">
-    <!-- Close Button inside menu -->
     <button id="menu-close" class="absolute top-4 right-4 p-1 text-white">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
       </svg>
     </button>
     <h2 class="text-lg font-bold mb-2">Menu</h2>
-    <!-- File Upload -->
     <div>
       <label class="block mb-1 font-bold">Upload Excel:</label>
       <input type="file" id="file-input" accept=".xlsx, .xls" class="w-full bg-gray-800 text-white p-2 rounded" />
     </div>
-    <!-- Column Selector -->
     <div>
       <span class="block mb-1 font-bold">Select Columns:</span>
       <div id="column-selectors" class="space-y-1 max-h-64 overflow-auto"></div>
     </div>
   </div>
 
-  <!-- Frames Container -->
-  <div class="flex" style="height: calc(100vh - 0px)">
-    <!-- Left Frame (10%) -->
-    <div id="left-frame" class="border-r border-gray-700 overflow-auto" style="width: 10%; margin-left:64px;"></div>
-    <!-- Right Frame (90%) -->
-    <div id="right-frame" class="p-4 overflow-auto" style="width: 90%;">
-      <!-- Font size controls -->
+  <!-- Main Content -->
+  <div class="flex h-full">
+    <!-- Left Frame -->
+    <div id="left-frame" class="relative border-r border-gray-700 overflow-auto" style="width:10%;">
+      <!-- Hamburger Toggle in Left Frame -->
+      <button id="menu-toggle" class="absolute top-2 left-2 p-2 bg-gray-800 rounded focus:outline-none z-40">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+      <!-- First-column list -->
+      <div id="list-container" class="mt-12"></div>
+    </div>
+
+    <!-- Right Frame -->
+    <div id="right-frame" class="p-4 overflow-auto" style="width:90%;">
+      <!-- Font Controls -->
       <div class="flex items-center mb-4 space-x-2">
         <button id="decrease-font" class="px-2 py-1 border border-white rounded">-</button>
         <button id="increase-font" class="px-2 py-1 border border-white rounded">+</button>
       </div>
-      <!-- Detail container for other columns -->
+      <!-- Details -->
       <div id="detail-container" class="space-y-4"></div>
     </div>
   </div>
 
   <script>
-    let data = [];
-    let currentIndex = 0;
-    let fontSize = 16;
-    let visibleColumns = new Set();
-
+    let data = [], currentIndex = 0, fontSize = 16, visibleColumns = new Set();
     const menuToggle = document.getElementById('menu-toggle');
     const menuClose = document.getElementById('menu-close');
     const sideMenu = document.getElementById('side-menu');
     const fileInput = document.getElementById('file-input');
-    const leftFrame = document.getElementById('left-frame');
+    const listContainer = document.getElementById('list-container');
     const detailContainer = document.getElementById('detail-container');
     const increaseFontBtn = document.getElementById('increase-font');
     const decreaseFontBtn = document.getElementById('decrease-font');
     const columnSelectors = document.getElementById('column-selectors');
 
-    // Toggle side menu
     menuToggle.addEventListener('click', () => sideMenu.classList.toggle('hidden'));
     menuClose.addEventListener('click', () => sideMenu.classList.add('hidden'));
-
     fileInput.addEventListener('change', handleFile);
     increaseFontBtn.addEventListener('click', () => adjustFont(2));
     decreaseFontBtn.addEventListener('click', () => adjustFont(-2));
     document.addEventListener('keydown', handleNavigation);
 
     function handleFile(e) {
-      const file = e.target.files[0];
       const reader = new FileReader();
-      reader.onload = function(event) {
-        const wb = XLSX.read(event.target.result, { type: 'array' });
+      reader.onload = evt => {
+        const wb = XLSX.read(evt.target.result, { type: 'array' });
         const ws = wb.Sheets[wb.SheetNames[0]];
-        data = XLSX.utils.sheet_to_json(ws, { header: 1 });
-        visibleColumns.clear();
-        data[0].forEach((_, idx) => visibleColumns.add(idx));
-        renderColumnSelectors();
-        renderList();
-        renderDetail(0);
+        data = XLSX.utils.sheet_to_json(ws, { header:1 });
+        visibleColumns.clear(); data[0].forEach((_,i)=>visibleColumns.add(i));
+        renderColumnSelectors(); renderList(); renderDetail(0);
       };
-      reader.readAsArrayBuffer(file);
+      reader.readAsArrayBuffer(e.target.files[0]);
     }
 
     function renderColumnSelectors() {
       columnSelectors.innerHTML = '';
-      data[0].forEach((header, idx) => {
-        const id = `col-${idx}`;
-        const wrapper = document.createElement('div');
-        wrapper.className = 'flex items-center';
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.id = id;
-        checkbox.checked = visibleColumns.has(idx);
-        checkbox.className = 'mr-2';
-        checkbox.addEventListener('change', () => {
-          if (checkbox.checked) visibleColumns.add(idx);
-          else visibleColumns.delete(idx);
+      data[0].forEach((h,i)=>{
+        const cb = document.createElement('input'); cb.type='checkbox'; cb.id=`col-${i}`;
+        cb.checked = visibleColumns.has(i);
+        cb.className='mr-2'; cb.addEventListener('change',()=>{
+          cb.checked?visibleColumns.add(i):visibleColumns.delete(i);
           renderDetail(currentIndex);
         });
-        const label = document.createElement('label');
-        label.htmlFor = id;
-        label.className = 'font-normal';
-        label.textContent = header || `Column ${idx+1}`;
-        wrapper.appendChild(checkbox);
-        wrapper.appendChild(label);
-        columnSelectors.appendChild(wrapper);
+        const lbl = document.createElement('label'); lbl.htmlFor=cb.id; lbl.className='font-normal'; lbl.textContent=h||`Col ${i+1}`;
+        const wr = document.createElement('div'); wr.className='flex items-center'; wr.append(cb,lbl);
+        columnSelectors.appendChild(wr);
       });
     }
 
     function renderList() {
-      leftFrame.innerHTML = '';
-      data.forEach((row, index) => {
-        const cell = document.createElement('div');
-        cell.textContent = row[0] || '';
-        cell.className = 'p-2 cursor-pointer hover:bg-gray-800 font-normal';
-        cell.addEventListener('click', () => selectRow(index));
-        leftFrame.appendChild(cell);
-      });
-      highlightSelected();
+      listContainer.innerHTML='';
+      data.forEach((r,i)=>{
+        const d = document.createElement('div');
+        d.textContent = r[0]||'';
+        d.className='p-2 cursor-pointer hover:bg-gray-800 font-normal';
+        d.addEventListener('click',()=>selectRow(i));
+        listContainer.appendChild(d);
+      }); highlightSelected();
     }
 
-    function renderDetail(index) {
-      currentIndex = index;
-      detailContainer.innerHTML = '';
-      const row = data[index] || [];
-      row.forEach((cell, idx) => {
-        if (!visibleColumns.has(idx)) return;
-        const header = data[0][idx] || `Column ${idx + 1}`;
-        const block = document.createElement('div');
-        block.className = 'p-2 border border-gray-700 rounded';
-        block.style.fontSize = `${fontSize}px`;
-        block.innerHTML = `
-          <div class="font-bold mb-1">${header}</div>
-          <div class="font-normal">${cell}</div>
-        `;
-        detailContainer.appendChild(block);
-      });
-      highlightSelected();
+    function renderDetail(idx) {
+      currentIndex=idx; detailContainer.innerHTML='';
+      (data[idx]||[]).forEach((c,i)=>{
+        if(!visibleColumns.has(i))return;
+        const hdr = data[0][i]||`Col ${i+1}`;
+        const b = document.createElement('div'); b.className='p-2 border border-gray-700 rounded';
+        b.style.fontSize = fontSize+'px';
+        b.innerHTML=`<div class="font-bold mb-1">${hdr}</div><div class="font-normal">${c}</div>`;
+        detailContainer.appendChild(b);
+      }); highlightSelected();
     }
 
-    function selectRow(index) {
-      renderDetail(index);
-    }
-
-    function adjustFont(delta) {
-      fontSize = Math.max(10, fontSize + delta);
-      Array.from(detailContainer.children).forEach(block => {
-        block.style.fontSize = `${fontSize}px`;
-      });
-    }
-
-    function handleNavigation(e) {
-      if (!data.length) return;
-      if (e.key === 'ArrowRight' || e.key === ' ') {
-        e.preventDefault();
-        const next = Math.min(data.length - 1, currentIndex + 1);
-        renderDetail(next);
-      }
-      if (e.key === 'ArrowLeft') {
-        e.preventDefault();
-        const prev = Math.max(0, currentIndex - 1);
-        renderDetail(prev);
-      }
-    }
-
-    function highlightSelected() {
-      Array.from(leftFrame.children).forEach((child, idx) => {
-        child.classList.toggle('bg-gray-800', idx === currentIndex);
-      });
-    }
+    function selectRow(i){renderDetail(i);}
+    function adjustFont(d){fontSize=Math.max(10,fontSize+d);Array.from(detailContainer.children).forEach(b=>b.style.fontSize=fontSize+'px');}
+    function handleNavigation(e){if(!data.length)return;if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();renderDetail(Math.min(data.length-1,currentIndex+1));}if(e.key==='ArrowLeft'){e.preventDefault();renderDetail(Math.max(0,currentIndex-1));}}
+    function highlightSelected(){Array.from(listContainer.children).forEach((ch,i)=>ch.classList.toggle('bg-gray-800',i===currentIndex));}
   </script>
 </body>
 </html>
