@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Discount Pricing Engine Swimlane Diagram</title>
-  <!-- Tailwind CSS CDN -->
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Merriweather Font -->
   <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
@@ -12,94 +12,87 @@
   <script src="https://unpkg.com/gojs/release/go.js"></script>
   <style>
     body, html { margin: 0; padding: 0; height: 100%; font-family: 'Merriweather', serif; }
-    #myDiagramDiv { width: 100%; height: 100%; }
+    #myDiagramDiv { width: 100vw; height: 100vh; }
   </style>
 </head>
-<body class="h-full flex items-center justify-center bg-gray-50">
-  <div id="myDiagramDiv" class="w-full h-full"></div>
-
+<body class="bg-gray-50">
+  <div id="myDiagramDiv"></div>
   <script>
-    // Initialize the GoJS diagram
-    function initDiagram() {
-      const $ = go.GraphObject.make;
-      const diagram = $(go.Diagram, "myDiagramDiv", {
+    function init() {
+      var $ = go.GraphObject.make;
+      var diagram = $(go.Diagram, 'myDiagramDiv', {
         initialAutoScale: go.Diagram.AutoScaleFit,
-        layout: $(go.GridLayout, { spacing: new go.Size(20,20), wrappingWidth: Infinity }),
+        layout: $(go.GridLayout, { spacing: new go.Size(20, 20), wrappingWidth: Infinity }),
         "undoManager.isEnabled": true,
         padding: 20
       });
 
       // Node template
       diagram.nodeTemplate =
-        $(go.Node, "Auto",
-          $(go.Shape, "Rectangle", { fill: "white", stroke: "#4A5568", strokeWidth: 1 }),
-          $(go.Panel, "Table", { defaultAlignment: go.Spot.Left, margin: 10, stretch: go.GraphObject.Horizontal },
-            $(go.RowColumnDefinition, { row: 0, separatorStroke: "#CBD5E0", separatorStrokeWidth: 1 }),
-            $(go.TextBlock, { row: 0, columnSpan: 2, font: "700 16px Merriweather, serif", margin: new go.Margin(0,0,5,0), alignment: go.Spot.Center },
-              new go.Binding("text", "title")),
-            $(go.TextBlock, { row: 1, columnSpan: 2, font: "400 14px Merriweather, serif", wrap: go.TextBlock.WrapFit, margin: new go.Margin(0,0,5,0) },
-              new go.Binding("text", "description")),
-            $(go.TextBlock, { row: 2, font: "300 12px Merriweather, serif" }, new go.Binding("text", "responsible", r => "Responsible: " + r)),
-            $(go.TextBlock, { row: 3, font: "300 12px Merriweather, serif" }, new go.Binding("text", "support", s => "Support: " + s)),
-            $(go.TextBlock, { row: 4, font: "300 12px Merriweather, serif" }, new go.Binding("text", "tools", t => "Tools: " + t)),
-            $(go.TextBlock, { row: 5, font: "300 12px Merriweather, serif" }, new go.Binding("text", "output", o => "Output: " + o))
+        $(go.Node, 'Auto',
+          $(go.Shape, 'Rectangle', { fill: 'white', stroke: '#4A5568', strokeWidth: 1 }),
+          $(go.Panel, 'Table', { defaultAlignment: go.Spot.Left, margin: 10, stretch: go.GraphObject.Horizontal },
+            $(go.RowColumnDefinition, { row: 0, separatorStroke: '#CBD5E0', separatorStrokeWidth: 1 }),
+            $(go.TextBlock, { row: 0, columnSpan: 2, font: '700 16px Merriweather, serif', margin: new go.Margin(0, 0, 5, 0), alignment: go.Spot.Center }, new go.Binding('text', 'title')),
+            $(go.TextBlock, { row: 1, columnSpan: 2, font: '400 14px Merriweather, serif', wrap: go.TextBlock.WrapFit, margin: new go.Margin(0, 0, 5, 0) }, new go.Binding('text', 'description')),
+            $(go.TextBlock, { row: 2, font: '300 12px Merriweather, serif' }, new go.Binding('text', 'responsible', r => 'Responsible: ' + r)),
+            $(go.TextBlock, { row: 3, font: '300 12px Merriweather, serif' }, new go.Binding('text', 'support', s => 'Support: ' + s)),
+            $(go.TextBlock, { row: 4, font: '300 12px Merriweather, serif' }, new go.Binding('text', 'tools', t => 'Tools: ' + t)),
+            $(go.TextBlock, { row: 5, font: '300 12px Merriweather, serif' }, new go.Binding('text', 'output', o => 'Output: ' + o))
           )
         );
 
       // Group template for swimlanes
       diagram.groupTemplate =
-        $(go.Group, "Vertical", { background: "#F7FAFC", movable: false, copyable: false, deletable: false },
-          $(go.TextBlock, { font: "700 18px Merriweather, serif", stroke: "#2D3748", margin: 10 }, new go.Binding("text", "key")),
+        $(go.Group, 'Vertical', { background: '#F7FAFC', movable: false, copyable: false, deletable: false },
+          $(go.TextBlock, { font: '700 18px Merriweather, serif', stroke: '#2D3748', margin: 10 }, new go.Binding('text', 'key')),
           $(go.Placeholder, { padding: 10 })
         );
 
       // Model data
       diagram.model = new go.GraphLinksModel(
         [
-          { key: "Initiation", isGroup: true },
-          { key: "Requirements", isGroup: true },
-          { key: "Design", isGroup: true },
-          { key: "Development", isGroup: true },
-          { key: "Testing", isGroup: true },
-          { key: "Deployment", isGroup: true },
-          { key: "Maintenance", isGroup: true },
+          { key: 'Initiation', isGroup: true },
+          { key: 'Requirements', isGroup: true },
+          { key: 'Design', isGroup: true },
+          { key: 'Development', isGroup: true },
+          { key: 'Testing', isGroup: true },
+          { key: 'Deployment', isGroup: true },
+          { key: 'Maintenance', isGroup: true },
 
-          // Initiation
-          { key: 1, group: "Initiation", title: "Project Kickoff Meeting", description: "Align objectives and stakeholders", responsible: "Project Manager", support: "Business Analyst", tools: "MS Teams, Miro", output: "Kickoff Minutes" },
-          { key: 2, group: "Initiation", title: "Business Case Approval", description: "Develop and secure approval", responsible: "Business Analyst", support: "Finance Team", tools: "Excel, PowerPoint", output: "Approved Business Case" },
+          // Initiation tasks
+          { key: 1, group: 'Initiation', title: 'Project Kickoff Meeting', description: 'Align objectives and stakeholders', responsible: 'Project Manager', support: 'Business Analyst', tools: 'MS Teams, Miro', output: 'Kickoff Minutes' },
+          { key: 2, group: 'Initiation', title: 'Business Case Approval', description: 'Develop and secure approval', responsible: 'Business Analyst', support: 'Finance Team', tools: 'Excel, PowerPoint', output: 'Approved Business Case' },
 
-          // Requirements
-          { key: 3, group: "Requirements", title: "Discount Rules Gathering", description: "Collect policies from stakeholders", responsible: "Business Analyst", support: "Collections Team", tools: "Workshops, Interviews", output: "Rules Document" },
-          { key: 4, group: "Requirements", title: "Data Source Analysis", description: "Analyze and map data fields", responsible: "Data Engineer", support: "Business Analyst", tools: "SQL, ER Diagrams", output: "Data Map" },
+          // Requirements tasks
+          { key: 3, group: 'Requirements', title: 'Discount Rules Gathering', description: 'Collect policies from stakeholders', responsible: 'Business Analyst', support: 'Collections Team', tools: 'Workshops, Interviews', output: 'Rules Document' },
+          { key: 4, group: 'Requirements', title: 'Data Source Analysis', description: 'Analyze and map data fields', responsible: 'Data Engineer', support: 'Business Analyst', tools: 'SQL, ER Diagrams', output: 'Data Map' },
 
-          // Design
-          { key: 5, group: "Design", title: "Architecture Design", description: "Design system architecture", responsible: "Solution Architect", support: "Lead Developer", tools: "Lucidchart", output: "Architecture Diagram" },
-          { key: 6, group: "Design", title: "UI Wireframes", description: "Design discount dashboard UI", responsible: "UX Designer", support: "Product Owner", tools: "Figma", output: "Wireframes" },
+          // Design tasks
+          { key: 5, group: 'Design', title: 'Architecture Design', description: 'Design system architecture', responsible: 'Solution Architect', support: 'Lead Developer', tools: 'Lucidchart', output: 'Architecture Diagram' },
+          { key: 6, group: 'Design', title: 'UI Wireframes', description: 'Design discount dashboard UI', responsible: 'UX Designer', support: 'Product Owner', tools: 'Figma', output: 'Wireframes' },
 
-          // Development
-          { key: 7, group: "Development", title: "Data Ingestion Pipeline", description: "Develop ETL pipelines", responsible: "Data Engineer", support: "DevOps Engineer", tools: "Airflow, Python", output: "ETL Scripts" },
-          { key: 8, group: "Development", title: "Pricing Algorithm Development", description: "Implement discount logic", responsible: "ML Engineer", support: "Data Scientist", tools: "Python, scikit-learn", output: "Algorithm Module" },
-          { key: 9, group: "Development", title: "API Development", description: "Expose pricing engine as service", responsible: "Backend Developer", support: "DevOps Engineer", tools: "Node.js, Docker", output: "API Endpoints" },
-          { key: 10, group: "Development", title: "Frontend Dashboard", description: "Build user interface", responsible: "Frontend Developer", support: "UX Designer", tools: "React, Tailwind", output: "Dashboard UI" },
+          // Development tasks
+          { key: 7, group: 'Development', title: 'Data Ingestion Pipeline', description: 'Develop ETL pipelines', responsible: 'Data Engineer', support: 'DevOps Engineer', tools: 'Airflow, Python', output: 'ETL Scripts' },
+          { key: 8, group: 'Development', title: 'Pricing Algorithm Development', description: 'Implement discount logic', responsible: 'ML Engineer', support: 'Data Scientist', tools: 'Python, scikit-learn', output: 'Algorithm Module' },
+          { key: 9, group: 'Development', title: 'API Development', description: 'Expose pricing engine as service', responsible: 'Backend Developer', support: 'DevOps Engineer', tools: 'Node.js, Docker', output: 'API Endpoints' },
+          { key: 10, group: 'Development', title: 'Frontend Dashboard', description: 'Build user interface', responsible: 'Frontend Developer', support: 'UX Designer', tools: 'React, Tailwind', output: 'Dashboard UI' },
 
-          // Testing
-          { key: 11, group: "Testing", title: "Unit & Integration Testing", description: "Test modules and integrations", responsible: "QA Engineer", support: "Developers", tools: "Jest, Postman", output: "Test Reports" },
-          { key: 12, group: "Testing", title: "System & UAT", description: "Validate end-to-end workflow", responsible: "QA Lead", support: "Business Users", tools: "Selenium, TestRail", output: "UAT Sign-off" },
+          // Testing tasks
+          { key: 11, group: 'Testing', title: 'Unit & Integration Testing', description: 'Test modules and integrations', responsible: 'QA Engineer', support: 'Developers', tools: 'Jest, Postman', output: 'Test Reports' },
+          { key: 12, group: 'Testing', title: 'System & UAT', description: 'Validate end-to-end workflow', responsible: 'QA Lead', support: 'Business Users', tools: 'Selenium, TestRail', output: 'UAT Sign-off' },
 
-          // Deployment
-          { key: 13, group: "Deployment", title: "Go-Live Deployment", description: "Deploy to production", responsible: "DevOps Engineer", support: "Backend Team", tools: "Kubernetes, Jenkins", output: "Live System" },
-          { key: 14, group: "Deployment", title: "User Training", description: "Train end-users", responsible: "Trainer", support: "BA", tools: "Slides, Demos", output: "Training Materials" },
+          // Deployment tasks
+          { key: 13, group: 'Deployment', title: 'Go-Live Deployment', description: 'Deploy to production', responsible: 'DevOps Engineer', support: 'Backend Team', tools: 'Kubernetes, Jenkins', output: 'Live System' },
+          { key: 14, group: 'Deployment', title: 'User Training', description: 'Train end-users', responsible: 'Trainer', support: 'Business Analyst', tools: 'Slides, Demos', output: 'Training Materials' },
 
-          // Maintenance
-          { key: 15, group: "Maintenance", title: "Post-Go-Live Support", description: "Monitor and resolve issues", responsible: "Support Engineer", support: "DevOps Team", tools: "Monitoring Tools", output: "Support Tickets" }
+          // Maintenance tasks
+          { key: 15, group: 'Maintenance', title: 'Post-Go-Live Support', description: 'Monitor and resolve issues', responsible: 'Support Engineer', support: 'DevOps Team', tools: 'Monitoring Tools', output: 'Support Tickets' }
         ],
         []
       );
-
-      return diagram;
     }
-
-    window.addEventListener('DOMContentLoaded', () => initDiagram());
+    window.addEventListener('load', init);
   </script>
 </body>
 </html>
