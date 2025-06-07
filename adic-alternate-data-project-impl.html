@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://unpkg.com/gojs/release/go.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather&display=swap" rel="stylesheet">
+  <script>
+    function init() {
+      const $ = go.GraphObject.make;
+      const myDiagram = $(go.Diagram, "myDiagramDiv", {
+        initialContentAlignment: go.Spot.Center,
+        layout: $(go.GridLayout, {
+          wrappingColumn: 4,
+          spacing: new go.Size(30, 30),
+          alignment: go.GridLayout.Position
+        }),
+        "undoManager.isEnabled": true
+      });
+
+      myDiagram.nodeTemplate =
+        $(go.Node, "Auto",
+          $(go.Shape, "RoundedRectangle", { strokeWidth: 1 }, new go.Binding("fill", "color")),
+          $(go.Panel, "Table", { margin: 6 },
+            $(go.TextBlock, { row: 0, column: 0, columnSpan: 2, font: "bold 12pt Merriweather", margin: new go.Margin(0,0,6,0), wrap: go.TextBlock.WrapFit, width: 280 }, new go.Binding("text", "title")),
+            $(go.TextBlock, { row: 1, column: 0, columnSpan: 2, font: "10pt Merriweather", wrap: go.TextBlock.WrapFit, width: 280 }, new go.Binding("text", "details")),
+            $(go.TextBlock, { row: 2, column: 0, columnSpan: 2, font: "italic 10pt Merriweather", margin: new go.Margin(6,0,0,0), wrap: go.TextBlock.WrapFit, width: 280 }, new go.Binding("text", "responsible")),
+            $(go.TextBlock, { row: 3, column: 0, columnSpan: 2, font: "10pt Merriweather", wrap: go.TextBlock.WrapFit, width: 280 }, new go.Binding("text", "support")),
+            $(go.TextBlock, { row: 4, column: 0, columnSpan: 2, font: "10pt Merriweather", wrap: go.TextBlock.WrapFit, width: 280 }, new go.Binding("text", "tools")),
+            $(go.TextBlock, { row: 5, column: 0, columnSpan: 2, font: "10pt Merriweather", wrap: go.TextBlock.WrapFit, width: 280 }, new go.Binding("text", "output"))
+          )
+        );
+
+      myDiagram.model = new go.GraphLinksModel(
+        [
+          { key:1, title:"Get People Together", details:"Gather stakeholders (CIO, CRO, ESG, etc.), align scope and risks.", responsible:"R: PM, A: Exec Sponsor", support:"S: BA, C: Stakeholders, I: Dev team", tools:"Zoom, Miro, Word, Excel", output:"Stakeholder Map, Meeting Notes", color:"#F59E0B" },
+          { key:2, title:"Gather Requirements", details:"Run workshops and interviews to gather business, technical, and regulatory needs. Create user stories and functional specs.", responsible:"R: BA/PO, A: PM", support:"S: Stakeholders, C: Legal, Risk, I: Dev team", tools:"Miro, Word, Jira/ADO, Excel", output:"User Stories, RTM, Functional Specs", color:"#FBBF24" },
+          { key:3, title:"Form the Team", details:"Assemble cross-functional team: Data Engineers, ML Specialists, Quant Researchers, Risk Analysts, ESG Analysts, Software Engineers, IT Ops, Compliance Officers.", responsible:"R: PM, A: Exec Sponsor", support:"S: HR, C: Functional Leads, I: BA/PO", tools:"Org Chart tools, Role Templates", output:"RACI Matrix, Org Chart, Role Charters", color:"#10B981" },
+          { key:4, title:"Governance & Methodology", details:"Define phased delivery (design, MVP, pilot, deployment), formal governance gates, meeting cadence (sprints, reviews, retros, steering committees, working groups).", responsible:"R: PM, A: Steering Committee", support:"S: BA, C: QA/Leads, I: Team", tools:"Excel, PPT, Agile Tooling", output:"Project Plan, Governance Framework", color:"#34D399" },
+          { key:5, title:"Data Source Catalog", details:"Catalog APIs (Twitter, news feeds, ESG vendors), web scraping targets (Glassdoor, blogs), batch feeds (Bloomberg, Refinitiv CSVs).", responsible:"R: Data Eng, A: PM", support:"S: Vendor Mgmt, C: Legal/Compliance, I: ML team", tools:"Excel, Postman, API Docs", output:"Data Source Inventory", color:"#60A5FA" },
+          { key:6, title:"Data Ingestion Pipelines", details:"Develop connectors with rate limit handling, retries, error logging; orchestrate with Azure Data Factory or Apache Airflow to ingest raw data into the data lake.", responsible:"R: Data Eng, A: Tech Lead", support:"S: Cloud Ops, C: InfoSec, I: ML team", tools:"Azure Data Factory, Apache Airflow, S3/Azure DLS", output:"Raw Data Lake Pipelines", color:"#3B82F6" },
+          { key:7, title:"Data Lake & Feature Store", details:"Implement secure raw data lake and curated feature store with folder structures, naming conventions, encryption at rest/in transit, RBAC.", responsible:"R: Data Eng, A: CDO", support:"S: IT Ops, C: Security, I: ML/BA", tools:"Azure DLS/AWS S3, Snowflake, Databricks Delta", output:"Feature Store, Access Control Matrix", color:"#6366F1" },
+          { key:8, title:"Feature Engineering & Enrichment", details:"Perform EDA, clean data (noise removal, missing imputation), aggregate metrics (daily sentiment, volatility), enrich with metadata tagging and composite indicators.", responsible:"R: ML Eng, A: Data Science Lead", support:"S: Data Eng, C: ESG/Risk SMEs, I: QA", tools:"Python, Pandas, Spark, SQL", output:"Engineered Feature Datasets", color:"#8B5CF6" },
+          { key:9, title:"Model Training & Validation", details:"Prototype ML models (XGBoost, LightGBM, ARIMA, LSTM, Transformers), perform rolling window CV, hyperparam tuning; backtest for R², Sharpe, drawdown; classification metrics for sentiment detection.", responsible:"R: DS Lead, A: PM", support:"S: QA, C: Model Validation Committee, I: Eng Team", tools:"MLflow, JupyterLab, Azure AutoML, Optuna", output:"Validated Models, Evaluation Reports", color:"#EC4899" },
+          { key:10, title:"Model Deployment & MLOps", details:"Containerize models, register in MLflow, deploy via Kubernetes/SageMaker/AzureML endpoints, implement drift detection and shadow mode scoring.", responsible:"R: ML Eng, A: PM", support:"S: IT Ops, C: Risk, I: DevOps", tools:"Docker, Kubernetes, MLflow, AzureML", output:"Prod APIs, Monitoring Dashboards", color:"#F472B6" },
+          { key:11, title:"App & Interface Development", details:"Design wireframes and high-fidelity mockups; develop BI dashboards or custom React/Angular app with drill-down, scenario adjustments, real-time alerts.", responsible:"R: UI Dev, A: PM", support:"S: UX, C: Users, I: DS Team", tools:"Figma, React, Power BI, REST APIs", output:"UI Mockups, Interactive App", color:"#EF4444" },
+          { key:12, title:"UAT & Pilot", details:"Draft and execute UAT plan with Investment Officers and Risk team; run shadow pilot, capture feedback and sign-off.", responsible:"R: QA Lead, A: PM", support:"S: BA, C: Users, I: Dev Team", tools:"Excel, TestRail, BI Tools", output:"UAT Report, Pilot Results", color:"#F87171" },
+          { key:13, title:"Go Live & Cutover", details:"Finalize cutover runbook, execute migration scripts, smoke test APIs, switch traffic, disable shadow mode.", responsible:"R: PM, A: CIO", support:"S: IT Ops, C: Users, I: QA", tools:"Runbook, Git, ServiceNow", output:"Go-Live Checklist, Approval, Announcements", color:"#9CA3AF" },
+          { key:14, title:"Hypercare & Post-Go-Live Support", details:"Stand up war room, monitor SLAs (P1 <1h), operate Level-1 helpdesk, triage incidents via ServiceNow.", responsible:"R: IT Ops, A: PM", support:"S: DS, C: End Users, I: Support Team", tools:"ServiceNow, Grafana, Slack", output:"Post-Go-Live Report, Support Logs", color:"#6B7280" },
+          { key:15, title:"Success Metrics & Continuous Improvement", details:"Instrument KPIs (alpha, Sharpe, VaR, adoption), convene monthly governance to review, manage backlog and retraining schedules.", responsible:"R: PM, A: Steering Committee", support:"S: Data/IT Leads, C: Users, I: PO", tools:"Excel, Dashboards, Jira", output:"KPI Reports, Improvement Backlog", color:"#4B5563" },
+          { key:16, title:"Closure & Formal Handover", details:"Compile closure report, lessons learned, conduct BAU handover workshops, finalize support plan and roadmap for next phases.", responsible:"R: PM, A: Exec Sponsor", support:"S: Support Lead, C: All Stakeholders, I: BA", tools:"PPT, Word, Confluence", output:"Closure Report, Handover Docs", color:"#374151" }
+        ], []);
+    }
+  </script>
+  <style>
+    html, body {
+      font-family: 'Merriweather', serif;
+      margin: 0;
+      padding: 0;
+      background-color: #111827;
+      color: white;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    #myDiagramDiv {
+      width: 95vw;
+      height: 90vh;
+      background-color: #1F2937;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body onload="init()">
+  <div class="p-4 text-xl font-bold">ADIC AI Project – Swimlane View (Full Details)</div>
+  <div id="myDiagramDiv"></div>
+</body>
+</html>
