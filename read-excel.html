@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Excel Viewer</title>
+  <!-- Tailwind CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
+  <!-- SheetJS -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+</head>
+<body class="bg-black text-white h-screen overflow-hidden">
+  <div class="p-4">
+    <input type="file" id="file-input" accept=".xlsx, .xls" class="mb-4" />
+  </div>
+  <div class="flex h-[calc(100vh-64px)]">
+    <!-- Left Frame -->
+    <div id="left-frame" class="w-1/12 border-r border-gray-700 overflow-auto">
+      <!-- List of first-column values -->
+    </div>
+    <!-- Right Frame -->
+    <div id="right-frame" class="w-11/12 p-4 overflow-auto">
+      <div class="flex items-center mb-4">
+        <button id="decrease-font" class="px-2 py-1 border border-white rounded mr-2">-</button>
+        <button id="increase-font" class="px-2 py-1 border border-white rounded">+</button>
+      </div>
+      <div id="detail-container" class="space-y-2">
+        <!-- Column details go here -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let data = [];
+    let currentIndex = 0;
+    let fontSize = 16;
+
+    const fileInput = document.getElementById('file-input');
+    const leftFrame = document.getElementById('left-frame');
+    const detailContainer = document.getElementById('detail-container');
+    const increaseFontBtn = document.getElementById('increase-font');
+    const decreaseFontBtn = document.getElementById('decrease-font');
+
+    fileInput.addEventListener('change', handleFile);
+    increaseFontBtn.addEventListener('click', () => adjustFont(2));
+    decreaseFontBtn.addEventListener('click', () => adjustFont(-2));
+    document.addEventListener('keydown', handleNavigation);
+
+    function handleFile(e) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const wb = XLSX.read(event.target.result, { type: 'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        data = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        renderList();
+        renderDetail(0);
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function renderList() {
+      leftFrame.innerHTML = '';
+      data.forEach((row, index) => {
+        const cell = document.createElement('div');
+        cell.textContent = row[0] || '';
+        cell.className = 'p-2 cursor-pointer hover:bg-gray-800';
+        cell.addEventListener('click', () => selectRow(index));
+        leftFrame.appendChild(cell);
+      });
+    }
+
+    function renderDetail(index) {
+      currentIndex = index;
+      detailContainer.innerHTML = '';
+      const row = data[index] || [];
+      row.forEach((cell, idx) => {
+        const block = document.createElement('div');
+        block.textContent = `${data[0][idx] || 'Column ' + (idx+1)}: ${cell}`;
+        block.className = 'p-2 border border-gray-700 rounded';
+        block.style.fontSize = fontSize + 'px';
+        detailContainer.appendChild(block);
+      });
+      highlightSelected();
+    }
+
+    function selectRow(index) {
+      renderDetail(index);
+    }
+
+    function adjustFont(delta) {
+      fontSize = Math.max(10, fontSize + delta);
+      Array.from(detailContainer.children).forEach(block => {
+        block.style.fontSize = fontSize + 'px';
+      });
+    }
+
+    function handleNavigation(e) {
+      if (!data.length) return;
+      if (e.key === 'ArrowRight' || e.key === ' ') {
+        e.preventDefault();
+        const next = Math.min(data.length - 1, currentIndex + 1);
+        renderDetail(next);
+      }
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        const prev = Math.max(0, currentIndex - 1);
+        renderDetail(prev);
+      }
+    }
+
+    function highlightSelected() {
+      Array.from(leftFrame.children).forEach((child, idx) => {
+        child.classList.toggle('bg-gray-800', idx === currentIndex);
+      });
+    }
+  </script>
+</body>
+</html>
