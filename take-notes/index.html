@@ -1,47 +1,265 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Rich Notes Manager</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link rel="stylesheet" href="styles.css">
   <link href="https://fonts.googleapis.com/css2?family=Georgia&family=Helvetica:wght@400;700&family=Merriweather:wght@400;700&family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
 </head>
-<body>
-  <div class="header">
-    <div class="toolbar">
-      <label><button onclick="document.getElementById('fileExcel').click()"><i class="bi bi-upload"></i> Load Excel</button>
-        <input id="fileExcel" type="file" accept=".xlsx,.xls" />
-      </label>
-      <button onclick="downloadExcel()"><i class="bi bi-download"></i> Download Notes (Excel)</button>
-      <span style="color:#888; margin-left:15px; font-size:0.98em;">Rich Notes Manager</span>
+<body class="bg-gray-50 min-h-screen font-sans">
+  <div class="fixed top-0 left-0 w-full z-20 bg-white shadow flex flex-row items-center px-3 py-3 space-x-4">
+    <label>
+      <button onclick="document.getElementById('fileExcel').click()" class="bg-gray-100 rounded px-4 py-1 mr-1 text-base hover:bg-blue-100 transition"><i class="bi bi-upload"></i> Load Excel</button>
+      <input id="fileExcel" type="file" accept=".xlsx,.xls" class="hidden" />
+    </label>
+    <button onclick="downloadExcel()" class="bg-gray-100 rounded px-4 py-1 text-base hover:bg-blue-100 transition"><i class="bi bi-download"></i> Download Notes (Excel)</button>
+    <span class="text-gray-400 ml-4 text-lg font-serif tracking-wide">Rich Notes Manager</span>
+  </div>
+  <div id="mainContainer" class="w-full flex justify-center pt-20" style="display:none;">
+    <div class="flex flex-row w-full max-w-7xl space-x-3">
+      <!-- Notes List -->
+      <div id="notesList" class="bg-white shadow rounded-xl w-2/5 min-w-[210px] max-w-xs p-3"></div>
+      <!-- Notes Panel -->
+      <div id="notesPanel" class="bg-white shadow rounded-xl w-3/5 p-6 min-w-[240px] flex flex-col">
+        <div class="flex flex-row gap-2 mb-2">
+          <button type="button" onclick="format('bold')" class="bg-gray-200 px-2 rounded hover:bg-blue-200"><b>B</b></button>
+          <button type="button" onclick="format('italic')" class="bg-gray-200 px-2 rounded hover:bg-blue-200"><i>I</i></button>
+          <button type="button" onclick="format('insertUnorderedList')" class="bg-gray-200 px-2 rounded hover:bg-blue-200">• List</button>
+          <button type="button" onclick="format('insertOrderedList')" class="bg-gray-200 px-2 rounded hover:bg-blue-200">1. List</button>
+          <button type="button" onclick="format('insertHorizontalRule')" class="bg-gray-200 px-2 rounded hover:bg-blue-200">― Line</button>
+          <button type="button" onclick="saveNote()" id="saveNoteBtn" class="ml-auto bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-700 transition">Save</button>
+          <button type="button" onclick="cancelEdit()" id="cancelBtn" class="ml-2 bg-gray-300 px-3 py-1 rounded text-gray-600 hover:bg-gray-400 transition hidden">Cancel</button>
+        </div>
+        <input id="noteTitle" type="text" placeholder="Title..." class="mb-1 border border-gray-300 rounded w-full px-3 py-2 text-base"/>
+        <div class="mb-2 relative">
+          <input id="noteTags" class="tags-input w-full border border-gray-300 rounded px-3 py-2 mb-1" placeholder="Tags (comma to add)" autocomplete="off"/>
+          <div id="autocompleteTags" class="absolute left-0 mt-1 bg-white border border-gray-200 rounded shadow max-h-28 overflow-y-auto w-full z-20 hidden"></div>
+          <div class="flex flex-wrap gap-2" id="tagList"></div>
+        </div>
+        <div class="text-xs text-gray-400 mb-2" id="datesInfo"></div>
+        <div id="editor" class="editor flex-1 border border-gray-300 rounded px-3 py-3 min-h-[120px] bg-gray-50 focus:outline-none" contenteditable="true" spellcheck="true"></div>
+      </div>
     </div>
   </div>
-  <div class="container" id="mainContainer" style="display:none;">
-    <div class="notes-list" id="notesList"></div>
-    <div class="notes-panel" id="notesPanel">
-      <div class="editor-toolbar">
-        <button type="button" onclick="format('bold')"><b>B</b></button>
-        <button type="button" onclick="format('italic')"><i>I</i></button>
-        <button type="button" onclick="format('insertUnorderedList')">• List</button>
-        <button type="button" onclick="format('insertOrderedList')">1. List</button>
-        <button type="button" onclick="format('insertHorizontalRule')">― Line</button>
-        <button type="button" onclick="saveNote()" id="saveNoteBtn" class="export-btn">Save</button>
-        <button type="button" onclick="cancelEdit()" id="cancelBtn" class="export-btn hidden">Cancel</button>
-      </div>
-      <input id="noteTitle" type="text" placeholder="Title..." style="margin-bottom:8px;width:99%;padding:7px;font-size:1.04em;border:1px solid #e0e0e0;border-radius:6px;" />
-      <div style="margin-bottom:9px; position:relative;">
-        <input id="noteTags" class="tags-input" placeholder="Tags (comma to add)" autocomplete="off" />
-        <div id="autocompleteTags" class="autocomplete-list hidden"></div>
-        <div class="tag-list" id="tagList"></div>
-      </div>
-      <div class="dates-info" id="datesInfo"></div>
-      <div id="editor" class="editor" contenteditable="true" spellcheck="true"></div>
-    </div>
-  </div>
+  <!-- xlsx + turndown -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/turndown@7.1.2/dist/turndown.min.js"></script>
-  <script src="app.js"></script>
+  <script>
+    // DATA & STATE
+    let notes = [], tagsSet = new Set();
+    let currentNoteId = null, editMode = false, tempTags = [];
+    const notesKey = 'rich_notes_app';
+    const notesList = document.getElementById('notesList');
+    const editor = document.getElementById('editor');
+    const noteTitle = document.getElementById('noteTitle');
+    const noteTags = document.getElementById('noteTags');
+    const tagList = document.getElementById('tagList');
+    const datesInfo = document.getElementById('datesInfo');
+    const saveNoteBtn = document.getElementById('saveNoteBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const mainContainer = document.getElementById('mainContainer');
+
+    // ==== AUTOSAVE ====
+    setInterval(()=>{ if(notes.length) localStorage.setItem(notesKey, JSON.stringify(notes)); }, 60*1000);
+
+    // ==== LOAD EXCEL ====
+    document.getElementById('fileExcel').addEventListener('change', handleExcel, false);
+    function handleExcel(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const data = new Uint8Array(evt.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(sheet, {header:1});
+        notes = [];
+        tagsSet.clear();
+        for(let i=1; i<rows.length; ++i){
+          const [id, title, tagsStr, content, created, modified] = rows[i];
+          const tags = (tagsStr||'').split(',').map(x=>x.trim()).filter(x=>x);
+          tags.forEach(t=>tagsSet.add(t));
+          notes.push({ id:id||genId(), title:title||'', tags, content:content||'', created:created||new Date().toISOString(), modified:modified||new Date().toISOString() });
+        }
+        localStorage.setItem(notesKey, JSON.stringify(notes));
+        showUI();
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // ==== INITIAL LOAD ====
+    window.onload = function(){
+      const saved = localStorage.getItem(notesKey);
+      if(saved){
+        notes = JSON.parse(saved);
+        notes.forEach(n => (n.tags||[]).forEach(t=>tagsSet.add(t)));
+        showUI();
+      }
+    };
+    function showUI(){ mainContainer.style.display='flex'; renderList(); }
+    function hideUI(){ mainContainer.style.display='none'; }
+
+    // ==== NOTES LIST ====
+    function renderList(){
+      notesList.innerHTML = `<button onclick="startNewNote()" class="mb-3 w-full bg-blue-100 text-blue-800 rounded px-3 py-1 font-medium hover:bg-blue-200">+ New Note</button>` +
+        notes.map(note=>`
+        <div class="flex flex-row items-center group border-b border-gray-100 py-2 ${note.id===currentNoteId?'bg-blue-50':''}">
+          <span class="flex-1 font-medium truncate cursor-pointer" onclick="viewNote('${note.id}')">${note.title||'Untitled'}</span>
+          <span class="flex gap-1 ml-2">${(note.tags||[]).map(t=>`<span class='bg-gray-100 text-blue-700 rounded px-2 py-0.5 text-xs'>${t}</span>`).join(' ')}</span>
+          <span class="ml-2 flex gap-2 opacity-80">
+            <i class="bi bi-eye hover:text-blue-600" title="View" onclick="viewNote('${note.id}')"></i>
+            <i class="bi bi-pencil-square hover:text-blue-600" title="Edit" onclick="editNote('${note.id}')"></i>
+            <i class="bi bi-trash hover:text-red-600" title="Delete" onclick="deleteNote('${note.id}')"></i>
+          </span>
+        </div>`).join('');
+    }
+
+    // ==== TAGS AUTOCOMPLETE ====
+    noteTags.addEventListener('input', function(e){
+      showAutocomplete(this.value);
+    });
+    noteTags.addEventListener('keydown', function(e){
+      if(e.key==='Enter'||e.key===','){
+        e.preventDefault();
+        addTag(this.value);
+        this.value = '';
+        hideAutocomplete();
+      }
+    });
+    function addTag(tag){
+      tag = tag.trim();
+      if(tag && !tempTags.includes(tag)){
+        tempTags.push(tag);
+        tagsSet.add(tag);
+        renderTags();
+      }
+    }
+    function renderTags(){
+      tagList.innerHTML = tempTags.map(t=>`<span class="bg-gray-200 text-blue-900 rounded px-2 py-0.5 text-xs flex items-center gap-1">${t}<span class="cursor-pointer text-lg" onclick="removeTag('${t}')">&times;</span></span>`).join(' ');
+    }
+    function removeTag(t){ tempTags = tempTags.filter(x=>x!==t); renderTags(); }
+    function showAutocomplete(input){
+      const autoDiv = document.getElementById('autocompleteTags');
+      if(!input) { hideAutocomplete(); return; }
+      const matches = Array.from(tagsSet).filter(t=>t.toLowerCase().includes(input.toLowerCase())&&!tempTags.includes(t));
+      if(matches.length){
+        autoDiv.innerHTML = matches.map(t=>`<div class='px-3 py-1 cursor-pointer hover:bg-blue-50' onclick="selectAutoTag('${t}')">${t}</div>`).join('');
+        autoDiv.classList.remove('hidden');
+      }else{ hideAutocomplete(); }
+    }
+    function selectAutoTag(t){ addTag(t); noteTags.value=''; hideAutocomplete(); }
+    function hideAutocomplete(){ document.getElementById('autocompleteTags').classList.add('hidden'); }
+
+    // ==== CRUD ====
+    function startNewNote(){
+      currentNoteId = null;
+      editMode = true;
+      noteTitle.value = '';
+      editor.innerHTML = '';
+      tempTags = [];
+      renderTags();
+      datesInfo.textContent = '';
+      saveNoteBtn.textContent = 'Save';
+      cancelBtn.classList.add('hidden');
+      noteTitle.disabled = false;
+      editor.contentEditable = true;
+      noteTags.disabled = false;
+    }
+    function viewNote(id){
+      const n = notes.find(x=>x.id===id);
+      if(!n) return;
+      editMode = false;
+      currentNoteId = id;
+      noteTitle.value = n.title;
+      editor.innerHTML = n.content;
+      tempTags = [...n.tags];
+      renderTags();
+      datesInfo.textContent = `Created: ${toDate(n.created)} | Modified: ${toDate(n.modified)}`;
+      saveNoteBtn.textContent = 'Edit';
+      cancelBtn.classList.add('hidden');
+      renderList();
+      noteTitle.disabled = true;
+      editor.contentEditable = false;
+      noteTags.disabled = true;
+    }
+    function editNote(id){
+      const n = notes.find(x=>x.id===id);
+      if(!n) return;
+      editMode = true;
+      currentNoteId = id;
+      noteTitle.value = n.title;
+      editor.innerHTML = n.content;
+      tempTags = [...n.tags];
+      renderTags();
+      datesInfo.textContent = `Created: ${toDate(n.created)} | Modified: ${toDate(n.modified)}`;
+      saveNoteBtn.textContent = 'Save';
+      cancelBtn.classList.remove('hidden');
+      renderList();
+      noteTitle.disabled = false;
+      editor.contentEditable = true;
+      noteTags.disabled = false;
+    }
+    function saveNote(){
+      let content = editor.innerHTML;
+      let title = noteTitle.value.trim();
+      let tags = [...tempTags];
+      if(editMode && currentNoteId){
+        let idx = notes.findIndex(x=>x.id===currentNoteId);
+        if(idx>-1){
+          notes[idx].title = title;
+          notes[idx].tags = tags;
+          notes[idx].content = content;
+          notes[idx].modified = new Date().toISOString();
+        }
+      } else {
+        let n = { id:genId(), title, tags, content, created:new Date().toISOString(), modified:new Date().toISOString() };
+        notes.unshift(n);
+        currentNoteId = n.id;
+      }
+      localStorage.setItem(notesKey, JSON.stringify(notes));
+      viewNote(currentNoteId);
+    }
+    function deleteNote(id){
+      if(!confirm('Delete this note?')) return;
+      notes = notes.filter(n=>n.id!==id);
+      currentNoteId = null;
+      localStorage.setItem(notesKey, JSON.stringify(notes));
+      renderList();
+      startNewNote();
+    }
+    function cancelEdit(){
+      if(currentNoteId) viewNote(currentNoteId);
+      else startNewNote();
+    }
+    function format(cmd){ document.execCommand(cmd, false, null); }
+
+    // ==== EXPORT TO EXCEL ====
+    function downloadExcel(){
+      const turndownService = new window.TurndownService();
+      const rows = [
+        ['id','title','tags','content','created','modified'],
+        ...notes.map(n=>[
+          n.id,
+          n.title,
+          n.tags.join(', '),
+          turndownService.turndown(n.content||''),
+          n.created,
+          n.modified
+        ])
+      ];
+      const ws = XLSX.utils.aoa_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Notes');
+      XLSX.writeFile(wb, 'notes_export.xlsx');
+      localStorage.removeItem(notesKey);
+      setTimeout(()=>location.reload(),300);
+    }
+
+    // ==== UTILS ====
+    function genId(){ return '_' + Math.random().toString(36).substr(2, 9); }
+    function toDate(d){ if(!d) return ''; try { return new Date(d).toLocaleString(); } catch { return d;} }
+  </script>
 </body>
 </html>
