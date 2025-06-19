@@ -3,76 +3,83 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Rich Notes Manager - Vue</title>
+  <title>Rich 232323Notes Manager - Vue</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- XLSX and Turndown must load before Vue code -->
+  <!-- XLSX and Turndown libraries loaded here -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/turndown@7.1.2/dist/turndown.min.js"></script>
-  <!-- Vue.js -->
+  <!-- Vue.js Framework -->
   <script src="https://unpkg.com/vue@3.4.26/dist/vue.global.prod.js"></script>
   <!-- Icons & Fonts -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Georgia&family=Helvetica:wght@400;700&family=Merriweather:wght@400;700&family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body class="bg-gray-50 min-h-screen font-sans">
-<div id="app" class="min-h-screen">
-  <!-- HEADER -->
-  <div class="fixed top-0 left-0 w-full z-20 bg-white shadow flex items-center px-4 py-3 space-x-4">
-    <label>
-      <button @click="$refs.fileExcel.click()" class="bg-gray-100 rounded px-4 py-1 hover:bg-blue-100 transition"><i class="bi bi-upload"></i> Load Excel</button>
-      <input ref="fileExcel" type="file" accept=".xlsx,.xls" class="hidden" @change="handleExcel" />
-    </label>
-    <button @click="downloadExcel" class="bg-gray-100 rounded px-4 py-1 hover:bg-blue-100 transition"><i class="bi bi-download"></i> Download Notes</button>
-    <span class="text-gray-400 ml-4 text-lg font-serif tracking-wide">Rich Notes Manager</span>
-  </div>
-  <!-- MAIN CONTENT -->
-  <div v-show="uiReady" class="flex justify-center pt-20 px-2">
-    <div class="flex w-full max-w-6xl space-x-4">
-      <!-- LIST -->
-      <div class="w-2/5 bg-white shadow rounded-xl p-4">
-        <button @click="startNewNote" class="w-full mb-4 bg-blue-100 text-blue-800 rounded px-3 py-2 hover:bg-blue-200">+ New Note</button>
-        <div v-for="n in notes" :key="n.id" :class="['flex items-center mb-2 p-2 rounded', n.id===currentNoteId?'bg-blue-50':'hover:bg-gray-50']">
-          <div class="flex-1 truncate cursor-pointer" @click="viewNote(n.id)">{{ n.title || 'Untitled' }}</div>
-          <div class="flex space-x-1">
-            <span v-for="t in n.tags" :key="t" class="bg-gray-100 text-blue-700 rounded px-2 py-0.5 text-xs">{{ t }}</span>
-          </div>
-          <div class="flex space-x-2 ml-2 text-gray-400">
-            <i class="bi bi-eye hover:text-blue-600 cursor-pointer" @click="viewNote(n.id)"></i>
-            <i class="bi bi-pencil-square hover:text-blue-600 cursor-pointer" @click="editNote(n.id)"></i>
-            <i class="bi bi-trash hover:text-red-600 cursor-pointer" @click="deleteNote(n.id)"></i>
-          </div>
-        </div>
-      </div>
-      <!-- EDITOR -->
-      <div class="w-3/5 bg-white shadow rounded-xl p-6 flex flex-col">
-        <div class="flex space-x-2 mb-3">
-          <button @click="format('bold')" class="bg-gray-200 px-2 rounded hover:bg-blue-200"><b>B</b></button>
-          <button @click="format('italic')" class="bg-gray-200 px-2 rounded hover:bg-blue-200"><i>I</i></button>
-          <button @click="format('insertUnorderedList')" class="bg-gray-200 px-2 rounded hover:bg-blue-200">• List</button>
-          <button @click="format('insertOrderedList')" class="bg-gray-200 px-2 rounded hover:bg-blue-200">1. List</button>
-          <button @click="format('insertHorizontalRule')" class="bg-gray-200 px-2 rounded hover:bg-blue-200">― Line</button>
-          <button @click="saveNote" class="ml-auto bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-700">{{ editMode ? 'Save' : 'Edit' }}</button>
-          <button @click="cancelEdit" v-if="editMode" class="bg-gray-300 px-3 py-1 rounded hover:bg-gray-400">Cancel</button>
-        </div>
-        <input v-model="noteTitle" :disabled="!editMode" placeholder="Title..." class="mb-2 border border-gray-300 rounded px-3 py-2" />
-        <div class="relative mb-2">
-          <input v-model="noteTagInput" @input="showAutocomplete" @keydown.enter.prevent="confirmTag" @keydown.",".prevent="confirmTag" :disabled="!editMode" placeholder="Tags (comma)..." class="w-full border border-gray-300 rounded px-3 py-2" />
-          <div v-if="showAutoList" class="absolute bg-white border border-gray-200 rounded shadow w-full max-h-32 overflow-y-auto z-10">
-            <div v-for="t in autoTags" :key="t" class="px-3 py-1 hover:bg-blue-50 cursor-pointer" @click="selectAutoTag(t)">{{ t }}</div>
+  <div id="app" class="min-h-screen">
+    <!-- HEADER -->
+    <div class="fixed top-0 left-0 w-full z-20 bg-white shadow flex items-center px-4 py-3 space-x-4">
+      <label>
+        <button @click="$refs.fileExcel.click()" class="bg-gray-100 rounded px-4 py-1 hover:bg-blue-100 transition"><i class="bi bi-upload"></i> Load Excel</button>
+        <input ref="fileExcel" type="file" accept=".xlsx,.xls" class="hidden" @change="handleExcel" />
+      </label>
+      <button @click="downloadExcel" class="bg-gray-100 rounded px-4 py-1 hover:bg-blue-100 transition"><i class="bi bi-download"></i> Download Notes</button>
+      <span class="text-gray-400 ml-4 text-lg font-serif tracking-wide">Rich Notes Manager</span>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div v-show="uiReady" class="flex justify-center pt-20 px-2">
+      <div class="flex w-full max-w-6xl space-x-4">
+
+        <!-- NOTES LIST -->
+        <div class="w-2/5 bg-white shadow rounded-xl p-4">
+          <button @click="startNewNote" class="w-full mb-4 bg-blue-100 text-blue-800 rounded px-3 py-2 hover:bg-blue-200">+ New Note</button>
+          <div v-for="n in notes" :key="n.id" :class="['flex items-center mb-2 p-2 rounded', n.id===currentNoteId?'bg-blue-50':'hover:bg-gray-50']">
+            <div class="flex-1 truncate cursor-pointer" @click="viewNote(n.id)">{{ n.title || 'Untitled' }}</div>
+            <div class="flex space-x-1">
+              <span v-for="t in n.tags" :key="t" class="bg-gray-100 text-blue-700 rounded px-2 py-0.5 text-xs">{{ t }}</span>
+            </div>
+            <div class="flex space-x-2 ml-2 text-gray-400">
+              <i class="bi bi-eye hover:text-blue-600 cursor-pointer" @click="viewNote(n.id)"></i>
+              <i class="bi bi-pencil-square hover:text-blue-600 cursor-pointer" @click="editNote(n.id)"></i>
+              <i class="bi bi-trash hover:text-red-600 cursor-pointer" @click="deleteNote(n.id)"></i>
+            </div>
           </div>
         </div>
-        <div class="flex flex-wrap mb-2 space-x-2">
-          <span v-for="t in tempTags" :key="t" class="bg-gray-200 text-blue-900 rounded px-2 py-1 text-xs flex items-center space-x-1">
-            <span>{{ t }}</span><span @click="removeTag(t)" class="cursor-pointer">×</span>
-          </span>
+
+        <!-- NOTE EDITOR -->
+        <div class="w-3/5 bg-white shadow rounded-xl p-6 flex flex-col">
+          <div class="flex space-x-2 mb-3">
+            <button @click="format('bold')" class="bg-gray-200 px-2 rounded hover:bg-blue-200"><b>B</b></button>
+            <button @click="format('italic')" class="bg-gray-200 px-2 rounded hover:bg-blue-200"><i>I</i></button>
+            <button @click="format('insertUnorderedList')" class="bg-gray-200 px-2 rounded hover:bg-blue-200">• List</button>
+            <button @click="format('insertOrderedList')" class="bg-gray-200 px-2 rounded hover:bg-blue-200">1. List</button>
+            <button @click="format('insertHorizontalRule')" class="bg-gray-200 px-2 rounded hover:bg-blue-200">― Line</button>
+            <button @click="saveNote" class="ml-auto bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-700">{{ editMode ? 'Save' : 'Edit' }}</button>
+            <button @click="cancelEdit" v-if="editMode" class="bg-gray-300 px-3 py-1 rounded hover:bg-gray-400">Cancel</button>
+          </div>
+
+          <input v-model="noteTitle" :disabled="!editMode" placeholder="Title..." class="mb-2 border border-gray-300 rounded px-3 py-2" />
+          <div class="relative mb-2">
+            <input v-model="noteTagInput" @input="showAutocomplete" @keydown.enter.prevent="confirmTag" @keydown.",".prevent="confirmTag" :disabled="!editMode" placeholder="Tags (comma)..." class="w-full border border-gray-300 rounded px-3 py-2" />
+            <div v-if="showAutoList" class="absolute bg-white border border-gray-200 rounded shadow w-full max-h-32 overflow-y-auto z-10">
+              <div v-for="t in autoTags" :key="t" class="px-3 py-1 hover:bg-blue-50 cursor-pointer" @click="selectAutoTag(t)">{{ t }}</div>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap mb-2 space-x-2">
+            <span v-for="t in tempTags" :key="t" class="bg-gray-200 text-blue-900 rounded px-2 py-1 text-xs flex items-center space-x-1">
+              <span>{{ t }}</span><span @click="removeTag(t)" class="cursor-pointer">×</span>
+            </span>
+          </div>
+
+          <div class="text-xs text-gray-400 mb-2">{{ noteDates }}</div>
+          <div id="editor" class="flex-1 border border-gray-300 rounded p-3 bg-gray-50" contenteditable="true" :contenteditable="editMode"></div>
         </div>
-        <div class="text-xs text-gray-400 mb-2">{{ noteDates }}</div>
-        <div id="editor" class="flex-1 border border-gray-300 rounded p-3 bg-gray-50" contenteditable="true" :contenteditable="editMode"></div>
       </div>
     </div>
   </div>
-</div>
+</body>
 
 <script>
 const { createApp, ref, onMounted } = Vue;
@@ -90,11 +97,13 @@ createApp({
     const autoTags = ref([]);
     const noteDates = ref('');
     const notesKey = 'rich_notes_app';
+    
     // Helpers
     const genId = () => '_' + Math.random().toString(36).substr(2, 9);
     const toDate = d => new Date(d).toLocaleString();
     const getEditor = () => document.getElementById('editor');
-    // Load localStorage
+
+    // Load from localStorage on mount
     onMounted(() => {
       const saved = localStorage.getItem(notesKey);
       if (saved) {
@@ -106,23 +115,30 @@ createApp({
         if (notes.value.length) localStorage.setItem(notesKey, JSON.stringify(notes.value));
       }, 60000);
     });
+
     // CRUD
     function startNewNote() {
-      currentNoteId.value = null; editMode.value = true;
-      noteTitle.value = ''; getEditor().innerHTML = '';
-      tempTags.value = []; noteTagInput.value = '';
+      currentNoteId.value = null;
+      editMode.value = true;
+      noteTitle.value = '';
+      getEditor().innerHTML = '';
+      tempTags.value = [];
+      noteTagInput.value = '';
       noteDates.value = '';
     }
     function viewNote(id) {
       const n = notes.value.find(x => x.id === id);
       if (!n) return;
-      editMode.value = false; currentNoteId.value = id;
-      noteTitle.value = n.title; getEditor().innerHTML = n.content;
+      editMode.value = false;
+      currentNoteId.value = id;
+      noteTitle.value = n.title;
+      getEditor().innerHTML = n.content;
       tempTags.value = [...n.tags];
       noteDates.value = `Created: ${toDate(n.created)} | Modified: ${toDate(n.modified)}`;
     }
     function editNote(id) {
-      viewNote(id); editMode.value = true;
+      viewNote(id);
+      editMode.value = true;
     }
     function saveNote() {
       const content = getEditor().innerHTML;
@@ -132,7 +148,14 @@ createApp({
         const idx = notes.value.findIndex(x => x.id === currentNoteId.value);
         Object.assign(notes.value[idx], { title, content, tags, modified: new Date().toISOString() });
       } else {
-        notes.value.unshift({ id: genId(), title, content, tags, created: new Date().toISOString(), modified: new Date().toISOString() });
+        notes.value.unshift({
+          id: genId(),
+          title,
+          content,
+          tags,
+          created: new Date().toISOString(),
+          modified: new Date().toISOString()
+        });
         currentNoteId.value = notes.value[0].id;
       }
       localStorage.setItem(notesKey, JSON.stringify(notes.value));
@@ -144,22 +167,48 @@ createApp({
       localStorage.setItem(notesKey, JSON.stringify(notes.value));
       startNewNote();
     }
-    function cancelEdit() { currentNoteId.value ? viewNote(currentNoteId.value) : startNewNote(); }
+    function cancelEdit() {
+      currentNoteId.value ?
+        viewNote(currentNoteId.value) :
+        startNewNote();
+    }
     function format(cmd) { document.execCommand(cmd, false, null); }
+
     // Tags
     function showAutocomplete() {
       const input = noteTagInput.value.trim();
       if (!input) return showAutoList.value = false;
-      autoTags.value = [...tagsSet.value].filter(t => t.toLowerCase().includes(input.toLowerCase()) && !tempTags.value.includes(t));
+      autoTags.value = [...tagsSet.value].filter(t =>
+        t.toLowerCase().includes(input.toLowerCase()) &&
+        !tempTags.value.includes(t)
+      );
       showAutoList.value = !!autoTags.value.length;
     }
-    function confirmTag() { addTag(noteTagInput.value); noteTagInput.value = ''; showAutoList.value = false; }
-    function selectAutoTag(t) { addTag(t); noteTagInput.value = ''; showAutoList.value = false; }
-    function addTag(t) { t = t.trim(); if (t && !tempTags.value.includes(t)) { tempTags.value.push(t); tagsSet.value.add(t); } }
-    function removeTag(t) { tempTags.value = tempTags.value.filter(x => x !== t); }
-    // Excel
+    function confirmTag() {
+      addTag(noteTagInput.value);
+      noteTagInput.value = '';
+      showAutoList.value = false;
+    }
+    function selectAutoTag(t) {
+      addTag(t);
+      noteTagInput.value = '';
+      showAutoList.value = false;
+    }
+    function addTag(t) {
+      t = t.trim();
+      if (t && !tempTags.value.includes(t)) {
+        tempTags.value.push(t);
+        tagsSet.value.add(t);
+      }
+    }
+    function removeTag(t) {
+      tempTags.value = tempTags.value.filter(x => x !== t);
+    }
+
+    // Excel Import
     function handleExcel(e) {
-      const file = e.target.files[0]; if (!file) return;
+      const file = e.target.files[0];
+      if (!file) return;
       const reader = new FileReader();
       reader.onload = evt => {
         const wb = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
@@ -167,28 +216,65 @@ createApp({
         notes.value = [];
         rows.slice(1).forEach(r => {
           const [id, title, tagsStr, content, created, modified] = r;
-          const tags = (tagsStr||'').split(',').map(x=>x.trim()).filter(x=>x);
-          tags.forEach(t=>tagsSet.value.add(t));
-          notes.value.push({ id:id||genId(), title, content, tags, created, modified });
+          const tags = (tagsStr||'').split(',').map(x => x.trim()).filter(x => x);
+          tags.forEach(t => tagsSet.value.add(t));
+          notes.value.push({ id: id||genId(), title, content, tags, created, modified });
         });
         localStorage.setItem(notesKey, JSON.stringify(notes.value));
-        uiReady.value = true; startNewNote();
+        uiReady.value = true;
+        startNewNote();
       };
       reader.readAsArrayBuffer(file);
     }
+
+    // Excel Export
     function downloadExcel() {
       const turndown = new TurndownService();
-      const rows = [[ 'id','title','tags','content','created','modified' ], ...notes.value.map(n => [n.id, n.title, n.tags.join(', '), turndown.turndown(n.content), n.created, n.modified ])];
+      const rows = [
+        [ 'id','title','tags','content','created','modified' ],
+        ...notes.value.map(n => [
+          n.id,
+          n.title,
+          n.tags.join(', '),
+          turndown.turndown(n.content),
+          n.created,
+          n.modified
+        ])
+      ];
       const ws = XLSX.utils.aoa_to_sheet(rows);
-      const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Notes'); XLSX.writeFile(wb, 'notes_export.xlsx');
-      localStorage.removeItem(notesKey); setTimeout(()=>location.reload(),300);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Notes');
+      XLSX.writeFile(wb, 'notes_export.xlsx');
+      localStorage.removeItem(notesKey);
+      setTimeout(() => location.reload(), 300);
     }
-    return { notes, uiReady, currentNoteId, editMode, noteTitle, tempTags, noteTagInput, showAutoList, autoTags, noteDates,
-             startNewNote, viewNote, editNote, saveNote, deleteNote, cancelEdit, format,
-             showAutocomplete, confirmTag, selectAutoTag, addTag, removeTag,
-             handleExcel, downloadExcel };
+
+    return {
+      notes,
+      uiReady,
+      currentNoteId,
+      editMode,
+      noteTitle,
+      tempTags,
+      noteTagInput,
+      showAutoList,
+      autoTags,
+      noteDates,
+      startNewNote,
+      viewNote,
+      editNote,
+      saveNote,
+      deleteNote,
+      cancelEdit,
+      format,
+      showAutocomplete,
+      confirmTag,
+      selectAutoTag,
+      addTag,
+      removeTag,
+      handleExcel,
+      downloadExcel
+    };
   }
 }).mount('#app');
 </script>
-</body>
-</html>
