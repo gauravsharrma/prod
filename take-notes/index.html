@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Rich Notes Manager - Vue123</title>
+  <title>Rich Notes Manager - Vue</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- XLSX and Turndown must load before Vue app -->
+  <!-- XLSX and Turndown must load before Vue code -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/turndown@7.1.2/dist/turndown.min.js"></script>
   <!-- Vue.js -->
@@ -178,15 +178,10 @@ createApp({
     }
     function downloadExcel() {
       const turndown = new TurndownService();
-      const rows = [[ 'id','title','tags','content','created','modified' ],
-        ...notes.value.map(n => [ n.id, n.title, n.tags.join(', '), turndown.turndown(n.content), n.created, n.modified ])
-      ];
+      const rows = [[ 'id','title','tags','content','created','modified' ], ...notes.value.map(n => [n.id, n.title, n.tags.join(', '), turndown.turndown(n.content), n.created, n.modified ])];
       const ws = XLSX.utils.aoa_to_sheet(rows);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Notes');
-      XLSX.writeFile(wb, 'notes_export.xlsx');
-      localStorage.removeItem(notesKey);
-      setTimeout(()=>location.reload(),300);
+      const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Notes'); XLSX.writeFile(wb, 'notes_export.xlsx');
+      localStorage.removeItem(notesKey); setTimeout(()=>location.reload(),300);
     }
     return { notes, uiReady, currentNoteId, editMode, noteTitle, tempTags, noteTagInput, showAutoList, autoTags, noteDates,
              startNewNote, viewNote, editNote, saveNote, deleteNote, cancelEdit, format,
