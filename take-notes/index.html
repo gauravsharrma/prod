@@ -3,77 +3,83 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Rich Notes Manager - Vue</title>
+  <title>Rich Notes Manager - Vue123</title>
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- XLSX and Turndown must load before Vue app -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/turndown@7.1.2/dist/turndown.min.js"></script>
+  <!-- Vue.js -->
   <script src="https://unpkg.com/vue@3.4.26/dist/vue.global.prod.js"></script>
+  <!-- Icons & Fonts -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Georgia&family=Helvetica:wght@400;700&family=Merriweather:wght@400;700&family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body class="bg-gray-50 min-h-screen font-sans">
 <div id="app" class="min-h-screen">
   <!-- HEADER -->
-  <div class="fixed top-0 left-0 w-full z-20 bg-white shadow flex flex-row items-center px-3 py-3 space-x-4">
+  <div class="fixed top-0 left-0 w-full z-20 bg-white shadow flex items-center px-4 py-3 space-x-4">
     <label>
-      <button @click="$refs.fileExcel.click()" class="bg-gray-100 rounded px-4 py-1 mr-1 text-base hover:bg-blue-100 transition"><i class="bi bi-upload"></i> Load Excel</button>
+      <button @click="$refs.fileExcel.click()" class="bg-gray-100 rounded px-4 py-1 hover:bg-blue-100 transition"><i class="bi bi-upload"></i> Load Excel</button>
       <input ref="fileExcel" type="file" accept=".xlsx,.xls" class="hidden" @change="handleExcel" />
     </label>
-    <button @click="downloadExcel" class="bg-gray-100 rounded px-4 py-1 text-base hover:bg-blue-100 transition"><i class="bi bi-download"></i> Download Notes (Excel)</button>
+    <button @click="downloadExcel" class="bg-gray-100 rounded px-4 py-1 hover:bg-blue-100 transition"><i class="bi bi-download"></i> Download Notes</button>
     <span class="text-gray-400 ml-4 text-lg font-serif tracking-wide">Rich Notes Manager</span>
   </div>
-  <!-- MAIN PANEL -->
-  <div v-show="uiReady" class="w-full flex justify-center pt-20">
-    <div class="flex flex-row w-full max-w-7xl space-x-3">
-      <!-- Notes List -->
-      <div class="bg-white shadow rounded-xl w-2/5 min-w-[210px] max-w-xs p-3">
-        <button @click="startNewNote" class="mb-3 w-full bg-blue-100 text-blue-800 rounded px-3 py-1 font-medium hover:bg-blue-200">+ New Note</button>
-        <div v-for="n in notes" :key="n.id" :class="['flex flex-row items-center group border-b border-gray-100 py-2', n.id===currentNoteId?'bg-blue-50':'']">
-          <span class="flex-1 font-medium truncate cursor-pointer" @click="viewNote(n.id)">{{ n.title || 'Untitled' }}</span>
-          <span class="flex gap-1 ml-2"> <span v-for="t in n.tags" :key="t" class='bg-gray-100 text-blue-700 rounded px-2 py-0.5 text-xs'>{{ t }}</span></span>
-          <span class="ml-2 flex gap-2 opacity-80">
-            <i class="bi bi-eye hover:text-blue-600" title="View" @click="viewNote(n.id)"></i>
-            <i class="bi bi-pencil-square hover:text-blue-600" title="Edit" @click="editNote(n.id)"></i>
-            <i class="bi bi-trash hover:text-red-600" title="Delete" @click="deleteNote(n.id)"></i>
-          </span>
+  <!-- MAIN CONTENT -->
+  <div v-show="uiReady" class="flex justify-center pt-20 px-2">
+    <div class="flex w-full max-w-6xl space-x-4">
+      <!-- LIST -->
+      <div class="w-2/5 bg-white shadow rounded-xl p-4">
+        <button @click="startNewNote" class="w-full mb-4 bg-blue-100 text-blue-800 rounded px-3 py-2 hover:bg-blue-200">+ New Note</button>
+        <div v-for="n in notes" :key="n.id" :class="['flex items-center mb-2 p-2 rounded', n.id===currentNoteId?'bg-blue-50':'hover:bg-gray-50']">
+          <div class="flex-1 truncate cursor-pointer" @click="viewNote(n.id)">{{ n.title || 'Untitled' }}</div>
+          <div class="flex space-x-1">
+            <span v-for="t in n.tags" :key="t" class="bg-gray-100 text-blue-700 rounded px-2 py-0.5 text-xs">{{ t }}</span>
+          </div>
+          <div class="flex space-x-2 ml-2 text-gray-400">
+            <i class="bi bi-eye hover:text-blue-600 cursor-pointer" @click="viewNote(n.id)"></i>
+            <i class="bi bi-pencil-square hover:text-blue-600 cursor-pointer" @click="editNote(n.id)"></i>
+            <i class="bi bi-trash hover:text-red-600 cursor-pointer" @click="deleteNote(n.id)"></i>
+          </div>
         </div>
       </div>
-      <!-- Notes Panel -->
-      <div class="bg-white shadow rounded-xl w-3/5 p-6 min-w-[240px] flex flex-col">
-        <div class="flex flex-row gap-2 mb-2">
-          <button type="button" @click="format('bold')" class="bg-gray-200 px-2 rounded hover:bg-blue-200"><b>B</b></button>
-          <button type="button" @click="format('italic')" class="bg-gray-200 px-2 rounded hover:bg-blue-200"><i>I</i></button>
-          <button type="button" @click="format('insertUnorderedList')" class="bg-gray-200 px-2 rounded hover:bg-blue-200">• List</button>
-          <button type="button" @click="format('insertOrderedList')" class="bg-gray-200 px-2 rounded hover:bg-blue-200">1. List</button>
-          <button type="button" @click="format('insertHorizontalRule')" class="bg-gray-200 px-2 rounded hover:bg-blue-200">― Line</button>
-          <button type="button" @click="saveNote" id="saveNoteBtn" class="ml-auto bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-700 transition">{{ editMode ? 'Save' : 'Edit' }}</button>
-          <button type="button" @click="cancelEdit" id="cancelBtn" class="ml-2 bg-gray-300 px-3 py-1 rounded text-gray-600 hover:bg-gray-400 transition" :class="{ hidden: !editMode }">Cancel</button>
+      <!-- EDITOR -->
+      <div class="w-3/5 bg-white shadow rounded-xl p-6 flex flex-col">
+        <div class="flex space-x-2 mb-3">
+          <button @click="format('bold')" class="bg-gray-200 px-2 rounded hover:bg-blue-200"><b>B</b></button>
+          <button @click="format('italic')" class="bg-gray-200 px-2 rounded hover:bg-blue-200"><i>I</i></button>
+          <button @click="format('insertUnorderedList')" class="bg-gray-200 px-2 rounded hover:bg-blue-200">• List</button>
+          <button @click="format('insertOrderedList')" class="bg-gray-200 px-2 rounded hover:bg-blue-200">1. List</button>
+          <button @click="format('insertHorizontalRule')" class="bg-gray-200 px-2 rounded hover:bg-blue-200">― Line</button>
+          <button @click="saveNote" class="ml-auto bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-700">{{ editMode ? 'Save' : 'Edit' }}</button>
+          <button @click="cancelEdit" v-if="editMode" class="bg-gray-300 px-3 py-1 rounded hover:bg-gray-400">Cancel</button>
         </div>
-        <input v-model="noteTitle" :disabled="!editMode" type="text" placeholder="Title..." class="mb-1 border border-gray-300 rounded w-full px-3 py-2 text-base"/>
-        <div class="mb-2 relative">
-          <input v-model="noteTagInput" @input="showAutocomplete" @keydown.enter.prevent="confirmTag" @keydown.",".prevent="confirmTag" :disabled="!editMode" class="w-full border border-gray-300 rounded px-3 py-2 mb-1" placeholder="Tags (comma to add)" autocomplete="off"/>
-          <div v-show="showAutoList" class="absolute left-0 mt-1 bg-white border border-gray-200 rounded shadow max-h-28 overflow-y-auto w-full z-20">
-            <div v-for="t in autoTags" :key="t" class='px-3 py-1 cursor-pointer hover:bg-blue-50' @click="selectAutoTag(t)">{{ t }}</div>
+        <input v-model="noteTitle" :disabled="!editMode" placeholder="Title..." class="mb-2 border border-gray-300 rounded px-3 py-2" />
+        <div class="relative mb-2">
+          <input v-model="noteTagInput" @input="showAutocomplete" @keydown.enter.prevent="confirmTag" @keydown.",".prevent="confirmTag" :disabled="!editMode" placeholder="Tags (comma)..." class="w-full border border-gray-300 rounded px-3 py-2" />
+          <div v-if="showAutoList" class="absolute bg-white border border-gray-200 rounded shadow w-full max-h-32 overflow-y-auto z-10">
+            <div v-for="t in autoTags" :key="t" class="px-3 py-1 hover:bg-blue-50 cursor-pointer" @click="selectAutoTag(t)">{{ t }}</div>
           </div>
-          <div class="flex flex-wrap gap-2" id="tagList">
-            <span v-for="t in tempTags" :key="t" class="bg-gray-200 text-blue-900 rounded px-2 py-0.5 text-xs flex items-center gap-1">
-              {{ t }}<span class="cursor-pointer text-lg" @click="removeTag(t)">&times;</span>
-            </span>
-          </div>
+        </div>
+        <div class="flex flex-wrap mb-2 space-x-2">
+          <span v-for="t in tempTags" :key="t" class="bg-gray-200 text-blue-900 rounded px-2 py-1 text-xs flex items-center space-x-1">
+            <span>{{ t }}</span><span @click="removeTag(t)" class="cursor-pointer">×</span>
+          </span>
         </div>
         <div class="text-xs text-gray-400 mb-2">{{ noteDates }}</div>
-        <div id="editor" class="editor flex-1 border border-gray-300 rounded px-3 py-3 min-h-[120px] bg-gray-50 focus:outline-none" contenteditable="true" spellcheck="true" :contenteditable="editMode"></div>
+        <div id="editor" class="flex-1 border border-gray-300 rounded p-3 bg-gray-50" contenteditable="true" :contenteditable="editMode"></div>
       </div>
     </div>
   </div>
-  <!-- xlsx + turndown -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/turndown@7.1.2/dist/turndown.min.js"></script>
 </div>
+
 <script>
-const { createApp, ref, onMounted, nextTick } = Vue;
+const { createApp, ref, onMounted } = Vue;
 createApp({
   setup() {
-    // === State ===
-    const notes = ref([]), tagsSet = ref(new Set());
+    const notes = ref([]);
+    const tagsSet = ref(new Set());
     const uiReady = ref(false);
     const currentNoteId = ref(null);
     const editMode = ref(false);
@@ -83,140 +89,109 @@ createApp({
     const showAutoList = ref(false);
     const autoTags = ref([]);
     const noteDates = ref('');
-    let autosaveInterval = null;
+    const notesKey = 'rich_notes_app';
     // Helpers
-    const getNote = id => notes.value.find(n => n.id === id);
     const genId = () => '_' + Math.random().toString(36).substr(2, 9);
-    const toDate = d => { if(!d) return ''; try { return new Date(d).toLocaleString(); } catch { return d;} };
-
-    // == Load from localStorage on mount ==
+    const toDate = d => new Date(d).toLocaleString();
+    const getEditor = () => document.getElementById('editor');
+    // Load localStorage
     onMounted(() => {
-      const saved = localStorage.getItem('rich_notes_app');
-      if(saved){
+      const saved = localStorage.getItem(notesKey);
+      if (saved) {
         notes.value = JSON.parse(saved);
-        notes.value.forEach(n => (n.tags||[]).forEach(t=>tagsSet.value.add(t)));
+        notes.value.forEach(n => n.tags.forEach(t => tagsSet.value.add(t)));
         uiReady.value = true;
       }
-      setTimeout(() => {
-        const ed = document.getElementById('editor');
-        if(ed) ed.addEventListener('keydown', e => { if(e.key==='Tab'){e.preventDefault();document.execCommand(e.shiftKey?'outdent':'indent');} });
-      },500);
-      autosaveInterval = setInterval(()=>{ if(notes.value.length) localStorage.setItem('rich_notes_app', JSON.stringify(notes.value)); }, 60*1000);
+      setInterval(() => {
+        if (notes.value.length) localStorage.setItem(notesKey, JSON.stringify(notes.value));
+      }, 60000);
     });
-    // == CRUD ==
-    function startNewNote(){
+    // CRUD
+    function startNewNote() {
       currentNoteId.value = null; editMode.value = true;
       noteTitle.value = ''; getEditor().innerHTML = '';
-      tempTags.value = []; noteTagInput.value='';
-      noteDates.value='';
+      tempTags.value = []; noteTagInput.value = '';
+      noteDates.value = '';
     }
-    function viewNote(id){
-      const n = getNote(id); if(!n) return;
+    function viewNote(id) {
+      const n = notes.value.find(x => x.id === id);
+      if (!n) return;
       editMode.value = false; currentNoteId.value = id;
       noteTitle.value = n.title; getEditor().innerHTML = n.content;
-      tempTags.value = [...n.tags]; noteTagInput.value='';
+      tempTags.value = [...n.tags];
       noteDates.value = `Created: ${toDate(n.created)} | Modified: ${toDate(n.modified)}`;
     }
-    function editNote(id){
-      const n = getNote(id); if(!n) return;
-      editMode.value = true; currentNoteId.value = id;
-      noteTitle.value = n.title; getEditor().innerHTML = n.content;
-      tempTags.value = [...n.tags]; noteTagInput.value='';
-      noteDates.value = `Created: ${toDate(n.created)} | Modified: ${toDate(n.modified)}`;
+    function editNote(id) {
+      viewNote(id); editMode.value = true;
     }
-    function saveNote(){
-      let content = getEditor().innerHTML;
-      let title = noteTitle.value.trim();
-      let tags = [...tempTags.value];
-      if(editMode.value && currentNoteId.value){
-        let idx = notes.value.findIndex(x=>x.id===currentNoteId.value);
-        if(idx>-1){
-          notes.value[idx].title = title;
-          notes.value[idx].tags = tags;
-          notes.value[idx].content = content;
-          notes.value[idx].modified = new Date().toISOString();
-        }
+    function saveNote() {
+      const content = getEditor().innerHTML;
+      const title = noteTitle.value.trim();
+      const tags = [...tempTags.value];
+      if (currentNoteId.value) {
+        const idx = notes.value.findIndex(x => x.id === currentNoteId.value);
+        Object.assign(notes.value[idx], { title, content, tags, modified: new Date().toISOString() });
       } else {
-        let n = { id:genId(), title, tags, content, created:new Date().toISOString(), modified:new Date().toISOString() };
-        notes.value.unshift(n);
-        currentNoteId.value = n.id;
+        notes.value.unshift({ id: genId(), title, content, tags, created: new Date().toISOString(), modified: new Date().toISOString() });
+        currentNoteId.value = notes.value[0].id;
       }
-      localStorage.setItem('rich_notes_app', JSON.stringify(notes.value));
+      localStorage.setItem(notesKey, JSON.stringify(notes.value));
       viewNote(currentNoteId.value);
     }
-    function deleteNote(id){
-      if(!confirm('Delete this note?')) return;
-      notes.value = notes.value.filter(n=>n.id!==id);
-      currentNoteId.value = null;
-      localStorage.setItem('rich_notes_app', JSON.stringify(notes.value));
+    function deleteNote(id) {
+      if (!confirm('Delete this note?')) return;
+      notes.value = notes.value.filter(x => x.id !== id);
+      localStorage.setItem(notesKey, JSON.stringify(notes.value));
       startNewNote();
     }
-    function cancelEdit(){
-      if(currentNoteId.value) viewNote(currentNoteId.value);
-      else startNewNote();
+    function cancelEdit() { currentNoteId.value ? viewNote(currentNoteId.value) : startNewNote(); }
+    function format(cmd) { document.execCommand(cmd, false, null); }
+    // Tags
+    function showAutocomplete() {
+      const input = noteTagInput.value.trim();
+      if (!input) return showAutoList.value = false;
+      autoTags.value = [...tagsSet.value].filter(t => t.toLowerCase().includes(input.toLowerCase()) && !tempTags.value.includes(t));
+      showAutoList.value = !!autoTags.value.length;
     }
-    function format(cmd){ document.execCommand(cmd, false, null); }
-    function getEditor(){ return document.getElementById('editor'); }
-    // == Tags ==
-    function showAutocomplete(){
-      let input = noteTagInput.value.trim();
-      if(!input) { showAutoList.value = false; return; }
-      autoTags.value = Array.from(tagsSet.value).filter(t=>t.toLowerCase().includes(input.toLowerCase())&&!tempTags.value.includes(t));
-      showAutoList.value = autoTags.value.length > 0;
-    }
-    function confirmTag(){ addTag(noteTagInput.value); noteTagInput.value=''; showAutoList.value=false; }
-    function selectAutoTag(t){ addTag(t); noteTagInput.value=''; showAutoList.value=false; }
-    function addTag(tag){ tag=tag.trim(); if(tag && !tempTags.value.includes(tag)){ tempTags.value.push(tag); tagsSet.value.add(tag); } }
-    function removeTag(t){ tempTags.value = tempTags.value.filter(x=>x!==t); }
-    // == Excel Import/Export ==
-    function handleExcel(e){
+    function confirmTag() { addTag(noteTagInput.value); noteTagInput.value = ''; showAutoList.value = false; }
+    function selectAutoTag(t) { addTag(t); noteTagInput.value = ''; showAutoList.value = false; }
+    function addTag(t) { t = t.trim(); if (t && !tempTags.value.includes(t)) { tempTags.value.push(t); tagsSet.value.add(t); } }
+    function removeTag(t) { tempTags.value = tempTags.value.filter(x => x !== t); }
+    // Excel
+    function handleExcel(e) {
       const file = e.target.files[0]; if (!file) return;
       const reader = new FileReader();
-      reader.onload = function(evt) {
-        const data = new Uint8Array(evt.target.result);
-        const workbook = XLSX.read(data, {type: 'array'});
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(sheet, {header:1});
+      reader.onload = evt => {
+        const wb = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
+        const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header:1 });
         notes.value = [];
-        tagsSet.value = new Set();
-        for(let i=1; i<rows.length; ++i){
-          const [id, title, tagsStr, content, created, modified] = rows[i];
+        rows.slice(1).forEach(r => {
+          const [id, title, tagsStr, content, created, modified] = r;
           const tags = (tagsStr||'').split(',').map(x=>x.trim()).filter(x=>x);
           tags.forEach(t=>tagsSet.value.add(t));
-          notes.value.push({ id:id||genId(), title:title||'', tags, content:content||'', created:created||new Date().toISOString(), modified:modified||new Date().toISOString() });
-        }
-        localStorage.setItem('rich_notes_app', JSON.stringify(notes.value));
-        uiReady.value = true;
-        startNewNote();
+          notes.value.push({ id:id||genId(), title, content, tags, created, modified });
+        });
+        localStorage.setItem(notesKey, JSON.stringify(notes.value));
+        uiReady.value = true; startNewNote();
       };
       reader.readAsArrayBuffer(file);
     }
-    function downloadExcel(){
-      const turndownService = new window.TurndownService();
-      const rows = [
-        ['id','title','tags','content','created','modified'],
-        ...notes.value.map(n=>[
-          n.id,
-          n.title,
-          n.tags.join(', '),
-          turndownService.turndown(n.content||''),
-          n.created,
-          n.modified
-        ])
+    function downloadExcel() {
+      const turndown = new TurndownService();
+      const rows = [[ 'id','title','tags','content','created','modified' ],
+        ...notes.value.map(n => [ n.id, n.title, n.tags.join(', '), turndown.turndown(n.content), n.created, n.modified ])
       ];
       const ws = XLSX.utils.aoa_to_sheet(rows);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Notes');
       XLSX.writeFile(wb, 'notes_export.xlsx');
-      localStorage.removeItem('rich_notes_app');
+      localStorage.removeItem(notesKey);
       setTimeout(()=>location.reload(),300);
     }
-    // == Expose ==
-    return {
-      notes, uiReady, currentNoteId, editMode, noteTitle, tempTags, noteTagInput, showAutoList, autoTags, noteDates,
-      startNewNote, viewNote, editNote, saveNote, deleteNote, cancelEdit, format,
-      showAutocomplete, selectAutoTag, removeTag, confirmTag, handleExcel, downloadExcel
-    };
+    return { notes, uiReady, currentNoteId, editMode, noteTitle, tempTags, noteTagInput, showAutoList, autoTags, noteDates,
+             startNewNote, viewNote, editNote, saveNote, deleteNote, cancelEdit, format,
+             showAutocomplete, confirmTag, selectAutoTag, addTag, removeTag,
+             handleExcel, downloadExcel };
   }
 }).mount('#app');
 </script>
