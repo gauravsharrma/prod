@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markdown Table Converter</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Merriweather Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Merriweather', serif; }
+  </style>
+</head>
+<body class="h-screen overflow-hidden">
+  <div class="flex h-full">
+    <!-- Left pane: Markdown input -->
+    <div class="w-1/10 p-4 border-r border-gray-300">
+      <h2 class="text-lg font-bold mb-2">Markdown Input</h2>
+      <textarea id="md-input" class="w-full h-full p-2 border border-gray-400 rounded resize-none" placeholder="Paste markdown table here"></textarea>
+    </div>
+    <!-- Right pane: HTML table output -->
+    <div class="flex-1 p-4 overflow-auto">
+      <h2 class="text-lg font-bold mb-4">Rendered Table</h2>
+      <div id="table-container"></div>
+    </div>
+  </div>
+
+  <script>
+    const mdInput = document.getElementById('md-input');
+    const tableContainer = document.getElementById('table-container');
+
+    mdInput.addEventListener('input', () => {
+      const md = mdInput.value.trim();
+      if (!md) {
+        tableContainer.innerHTML = '';
+        return;
+      }
+      const lines = md.split('\n').filter(l => l.trim());
+      if (lines.length < 2) return;
+
+      const headings = lines[0].split('|').map(h => h.trim()).filter(h => h);
+      const rows = lines.slice(2).map(line =>
+        line.split('|').map(cell => cell.trim()).filter((c, i) => i > 0)
+      );
+
+      // Compute distinct values per column
+      const distinctValues = headings.map((_, idx) => {
+        const vals = rows.map(r => r[idx]);
+        return Array.from(new Set(vals));
+      });
+
+      // Create table
+      const table = document.createElement('table');
+      table.className = 'min-w-full border-collapse';
+
+      // Header with filters
+      const thead = document.createElement('thead');
+      const headerRow = document.createElement('tr');
+      const filterRow = document.createElement('tr');
+
+      headings.forEach((h, idx) => {
+        const th = document.createElement('th');
+        th.className = 'border px-4 py-2 text-left';
+        th.textContent = h;
+        headerRow.appendChild(th);
+
+        const filterTh = document.createElement('th');
+        filterTh.className = 'border px-2 py-1';
+
+        if (distinctValues[idx].length <= 10) {
+          const select = document.createElement('select');
+          select.className = 'w-full p-1 border rounded text-sm';
+          const defaultOpt = document.createElement('option');
+          defaultOpt.value = '';
+          defaultOpt.textContent = 'All';
+          select.appendChild(defaultOpt);
+          distinctValues[idx].forEach(val => {
+            const opt = document.createElement('option');
+            opt.value = val;
+            opt.textContent = val;
+            select.appendChild(opt);
+          });
+          select.addEventListener('change', () => applyFilters());
+          select.dataset.colIndex = idx;
+          filterTh.appendChild(select);
+        } else {
+          const input = document.createElement('input');
+          input.className = 'w-full p-1 border rounded text-sm';
+          input.placeholder = 'Search';
+          input.addEventListener('input', () => applyFilters());
+          input.dataset.colIndex = idx;
+          filterTh.appendChild(input);
+        }
+
+        filterRow.appendChild(filterTh);
+      });
+      thead.appendChild(headerRow);
+      thead.appendChild(filterRow);
+      table.appendChild(thead);
+
+      // Body
+      const tbody = document.createElement('tbody');
+      rows.forEach(cells => {
+        const tr = document.createElement('tr');
+        cells.forEach(cell => {
+          const td = document.createElement('td');
+          td.className = 'border px-4 py-2';
+          td.textContent = cell;
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+
+      tableContainer.innerHTML = '';
+      tableContainer.appendChild(table);
+    });
+
+    function applyFilters() {
+      const filters = Array.from(document.querySelectorAll('thead select, thead input')).map(el => ({
+        value: el.value.toLowerCase(),
+        idx: parseInt(el.dataset.colIndex)
+      }));
+      const rows = tableContainer.querySelectorAll('tbody tr');
+      rows.forEach(tr => {
+        const cells = tr.querySelectorAll('td');
+        let visible = true;
+        filters.forEach(f => {
+          if (f.value) {
+            const cellText = cells[f.idx].textContent.toLowerCase();
+            if (elIsSelect(f.idx)) {
+              if (f.value && cellText !== f.value) visible = false;
+            } else {
+              if (!cellText.includes(f.value)) visible = false;
+            }
+          }
+        });
+        tr.style.display = visible ? '' : 'none';
+      });
+    }
+
+    function elIsSelect(idx) {
+      const el = document.querySelector(`thead [data-col-index='${idx}']`);
+      return el && el.tagName === 'SELECT';
+    }
+  </script>
+</body>
+</html>
